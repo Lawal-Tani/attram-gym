@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, Calendar, Target } from 'lucide-react';
+import { Users, UserPlus, Calendar, Shield } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -17,6 +17,7 @@ interface Member {
   goal: 'weight_loss' | 'muscle_gain';
   membershipExpiry: string;
   startDate: string;
+  role: 'user' | 'admin';
 }
 
 const AdminDashboard = () => {
@@ -28,7 +29,8 @@ const AdminDashboard = () => {
       email: 'john@example.com',
       goal: 'muscle_gain',
       membershipExpiry: '2024-12-31',
-      startDate: '2024-01-01'
+      startDate: '2024-01-01',
+      role: 'user'
     },
     {
       id: '3',
@@ -36,29 +38,32 @@ const AdminDashboard = () => {
       email: 'jane@example.com',
       goal: 'weight_loss',
       membershipExpiry: '2024-06-15',
-      startDate: '2024-01-15'
+      startDate: '2024-01-15',
+      role: 'user'
     }
   ]);
 
-  const [newMember, setNewMember] = useState({
+  const [newUser, setNewUser] = useState({
     name: '',
     email: '',
     goal: 'weight_loss' as 'weight_loss' | 'muscle_gain',
-    membershipExpiry: ''
+    membershipExpiry: '',
+    role: 'user' as 'user' | 'admin'
   });
 
-  const handleAddMember = () => {
-    if (newMember.name && newMember.email && newMember.membershipExpiry) {
-      const member: Member = {
+  const handleAddUser = () => {
+    if (newUser.name && newUser.email && newUser.membershipExpiry) {
+      const user: Member = {
         id: Date.now().toString(),
-        name: newMember.name,
-        email: newMember.email,
-        goal: newMember.goal,
-        membershipExpiry: newMember.membershipExpiry,
-        startDate: new Date().toISOString().split('T')[0]
+        name: newUser.name,
+        email: newUser.email,
+        goal: newUser.goal,
+        membershipExpiry: newUser.membershipExpiry,
+        startDate: new Date().toISOString().split('T')[0],
+        role: newUser.role
       };
-      setMembers([...members, member]);
-      setNewMember({ name: '', email: '', goal: 'weight_loss', membershipExpiry: '' });
+      setMembers([...members, user]);
+      setNewUser({ name: '', email: '', goal: 'weight_loss', membershipExpiry: '', role: 'user' });
     }
   };
 
@@ -74,15 +79,16 @@ const AdminDashboard = () => {
 
   const activeMembers = members.filter(m => getMembershipStatus(m.membershipExpiry).status !== 'expired').length;
   const expiringMembers = members.filter(m => getMembershipStatus(m.membershipExpiry).status === 'expiring').length;
+  const totalAdmins = members.filter(m => m.role === 'admin').length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <NavigationBar />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name}! Manage gym members and track renewals.</p>
+          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, {user?.name}! Manage gym members and admins.</p>
         </div>
 
         {/* Stats Cards */}
@@ -100,7 +106,7 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Members</CardTitle>
-              <Target className="h-4 w-4 text-green-600" />
+              <Users className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{activeMembers}</div>
@@ -119,30 +125,30 @@ const AdminDashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue This Month</CardTitle>
-              <UserPlus className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium">Total Admins</CardTitle>
+              <Shield className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">$2,450</div>
+              <div className="text-2xl font-bold text-blue-600">{totalAdmins}</div>
             </CardContent>
           </Card>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Add New Member */}
+          {/* Add New User/Admin */}
           <Card className="lg:col-span-1">
             <CardHeader>
-              <CardTitle>Add New Member</CardTitle>
-              <CardDescription>Register a new gym member</CardDescription>
+              <CardTitle>Add New User</CardTitle>
+              <CardDescription>Register a new member or admin</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
-                  value={newMember.name}
-                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                  placeholder="Enter member name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="Enter name"
                 />
               </div>
               
@@ -151,15 +157,28 @@ const AdminDashboard = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={newMember.email}
-                  onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                   placeholder="Enter email address"
                 />
               </div>
 
               <div>
+                <Label htmlFor="role">Role</Label>
+                <Select value={newUser.role} onValueChange={(value: 'user' | 'admin') => setNewUser({ ...newUser, role: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Member</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label htmlFor="goal">Fitness Goal</Label>
-                <Select value={newMember.goal} onValueChange={(value: 'weight_loss' | 'muscle_gain') => setNewMember({ ...newMember, goal: value })}>
+                <Select value={newUser.goal} onValueChange={(value: 'weight_loss' | 'muscle_gain') => setNewUser({ ...newUser, goal: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -175,23 +194,23 @@ const AdminDashboard = () => {
                 <Input
                   id="expiry"
                   type="date"
-                  value={newMember.membershipExpiry}
-                  onChange={(e) => setNewMember({ ...newMember, membershipExpiry: e.target.value })}
+                  value={newUser.membershipExpiry}
+                  onChange={(e) => setNewUser({ ...newUser, membershipExpiry: e.target.value })}
                 />
               </div>
 
-              <Button onClick={handleAddMember} className="w-full">
+              <Button onClick={handleAddUser} className="w-full">
                 <UserPlus className="w-4 h-4 mr-2" />
-                Add Member
+                Add {newUser.role === 'admin' ? 'Admin' : 'Member'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Members List */}
+          {/* Users List */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Members List</CardTitle>
-              <CardDescription>Manage existing gym members</CardDescription>
+              <CardTitle>Users & Admins</CardTitle>
+              <CardDescription>Manage existing users and administrators</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -200,9 +219,17 @@ const AdminDashboard = () => {
                   return (
                     <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
-                        <h3 className="font-semibold">{member.name}</h3>
-                        <p className="text-sm text-gray-600">{member.email}</p>
-                        <p className="text-xs text-gray-500 capitalize">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold">{member.name}</h3>
+                          {member.role === 'admin' && (
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                              <Shield className="w-3 h-3 mr-1" />
+                              Admin
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
                           Goal: {member.goal.replace('_', ' ')}
                         </p>
                       </div>
@@ -225,10 +252,10 @@ const AdminDashboard = () => {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Expires: {new Date(member.membershipExpiry).toLocaleDateString()}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {membershipInfo.status === 'expired' 
                             ? `${membershipInfo.days} days ago`
                             : `${membershipInfo.days} days left`
