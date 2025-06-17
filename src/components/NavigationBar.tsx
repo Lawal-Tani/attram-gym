@@ -1,25 +1,57 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Home, Target, User, Settings, LogOut } from 'lucide-react';
+import { Dumbbell, Home, Target, User, Settings, LogOut, Moon, Sun } from 'lucide-react';
 
 const NavigationBar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
+  useEffect(() => {
+    // Check if dark mode is already enabled
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  useEffect(() => {
+    // Check localStorage for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setIsDarkMode(true);
+    } else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      setIsDarkMode(false);
+    }
+  }, []);
+
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-background shadow-sm border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Dumbbell className="h-6 w-6 text-emerald-500" />
-            <span className="text-xl font-bold text-gray-800">Attram Gym</span>
+            <span className="text-xl font-bold text-foreground">Attram Gym</span>
           </Link>
 
           {/* Navigation Links */}
@@ -28,8 +60,8 @@ const NavigationBar = () => {
               to="/dashboard" 
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/dashboard') 
-                  ? 'bg-emerald-100 text-emerald-700' 
-                  : 'text-gray-600 hover:text-emerald-600'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                  : 'text-muted-foreground hover:text-emerald-600'
               }`}
             >
               <Home className="h-4 w-4" />
@@ -40,8 +72,8 @@ const NavigationBar = () => {
               to="/workout-plan" 
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/workout-plan') 
-                  ? 'bg-emerald-100 text-emerald-700' 
-                  : 'text-gray-600 hover:text-emerald-600'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                  : 'text-muted-foreground hover:text-emerald-600'
               }`}
             >
               <Target className="h-4 w-4" />
@@ -52,8 +84,8 @@ const NavigationBar = () => {
               to="/profile" 
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/profile') 
-                  ? 'bg-emerald-100 text-emerald-700' 
-                  : 'text-gray-600 hover:text-emerald-600'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                  : 'text-muted-foreground hover:text-emerald-600'
               }`}
             >
               <User className="h-4 w-4" />
@@ -65,8 +97,8 @@ const NavigationBar = () => {
                 to="/admin" 
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive('/admin') 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-blue-600'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                    : 'text-muted-foreground hover:text-blue-600'
                 }`}
               >
                 <Settings className="h-4 w-4" />
@@ -78,9 +110,19 @@ const NavigationBar = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Dark Mode Toggle */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleDarkMode}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-gray-800">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">
+              <p className="text-sm font-medium text-foreground">{user?.name}</p>
+              <p className="text-xs text-muted-foreground capitalize">
                 {user?.goal?.replace('_', ' ')} • {user?.role}
               </p>
             </div>
@@ -88,7 +130,7 @@ const NavigationBar = () => {
               variant="ghost" 
               size="sm" 
               onClick={logout}
-              className="text-gray-600 hover:text-red-600"
+              className="text-muted-foreground hover:text-red-600"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:ml-2 sm:inline">Logout</span>
@@ -98,12 +140,12 @@ const NavigationBar = () => {
       </div>
 
       {/* Mobile Navigation */}
-      <div className="md:hidden border-t bg-gray-50">
+      <div className="md:hidden border-t border-border bg-muted/50">
         <div className="flex justify-around py-2">
           <Link 
             to="/dashboard"
             className={`flex flex-col items-center py-2 px-4 text-xs ${
-              isActive('/dashboard') ? 'text-emerald-600' : 'text-gray-600'
+              isActive('/dashboard') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
             <Home className="h-5 w-5 mb-1" />
@@ -112,7 +154,7 @@ const NavigationBar = () => {
           <Link 
             to="/workout-plan"
             className={`flex flex-col items-center py-2 px-4 text-xs ${
-              isActive('/workout-plan') ? 'text-emerald-600' : 'text-gray-600'
+              isActive('/workout-plan') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
             <Target className="h-5 w-5 mb-1" />
@@ -121,7 +163,7 @@ const NavigationBar = () => {
           <Link 
             to="/profile"
             className={`flex flex-col items-center py-2 px-4 text-xs ${
-              isActive('/profile') ? 'text-emerald-600' : 'text-gray-600'
+              isActive('/profile') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
             <User className="h-5 w-5 mb-1" />
@@ -131,13 +173,20 @@ const NavigationBar = () => {
             <Link 
               to="/admin"
               className={`flex flex-col items-center py-2 px-4 text-xs ${
-                isActive('/admin') ? 'text-blue-600' : 'text-gray-600'
+                isActive('/admin') ? 'text-blue-600' : 'text-muted-foreground'
               }`}
             >
               <Settings className="h-5 w-5 mb-1" />
               <span>Admin</span>
             </Link>
           )}
+          <button
+            onClick={toggleDarkMode}
+            className="flex flex-col items-center py-2 px-4 text-xs text-muted-foreground"
+          >
+            {isDarkMode ? <Sun className="h-5 w-5 mb-1" /> : <Moon className="h-5 w-5 mb-1" />}
+            <span>Theme</span>
+          </button>
         </div>
       </div>
     </nav>
