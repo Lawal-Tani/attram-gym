@@ -1,217 +1,262 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import NavigationBar from '@/components/NavigationBar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Target, TrendingUp, Clock, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import NavigationBar from '@/components/NavigationBar';
+import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
-  const [weeklyProgress, setWeeklyProgress] = useState(0);
-  const [streak, setStreak] = useState(0);
 
-  useEffect(() => {
-    // Load completed workouts from localStorage
-    const saved = localStorage.getItem(`workouts_${user?.id}`);
-    if (saved) {
-      const savedWorkouts = JSON.parse(saved);
-      setCompletedWorkouts(savedWorkouts);
-      
-      // Calculate weekly progress (assuming 6 workouts per week)
-      const thisWeek = savedWorkouts.filter((date: string) => {
-        const workoutDate = new Date(date);
-        const now = new Date();
-        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-        return workoutDate >= weekStart;
-      });
-      
-      setWeeklyProgress((thisWeek.length / 6) * 100);
-      setStreak(thisWeek.length);
+  // Mock workout data based on user goal
+  const getWorkoutPlan = () => {
+    if (user?.goal === 'muscle_gain') {
+      return [
+        { day: 'Monday', workout: 'Chest & Triceps', exercises: ['Bench Press', 'Incline Press', 'Tricep Dips'] },
+        { day: 'Tuesday', workout: 'Back & Biceps', exercises: ['Pull-ups', 'Rows', 'Bicep Curls'] },
+        { day: 'Wednesday', workout: 'Legs', exercises: ['Squats', 'Deadlifts', 'Leg Press'] },
+        { day: 'Thursday', workout: 'Shoulders', exercises: ['Military Press', 'Lateral Raises', 'Rear Delts'] },
+        { day: 'Friday', workout: 'Arms', exercises: ['Close-Grip Press', 'Hammer Curls', 'Dips'] },
+        { day: 'Saturday', workout: 'Full Body', exercises: ['Compound Movements', 'Core Work'] }
+      ];
+    } else {
+      return [
+        { day: 'Monday', workout: 'HIIT Cardio', exercises: ['Burpees', 'Mountain Climbers', 'Jump Squats'] },
+        { day: 'Tuesday', workout: 'Upper Body Circuit', exercises: ['Push-ups', 'Pull-ups', 'Planks'] },
+        { day: 'Wednesday', workout: 'Cardio & Core', exercises: ['Running', 'Bicycle Crunches', 'Russian Twists'] },
+        { day: 'Thursday', workout: 'Lower Body Circuit', exercises: ['Squats', 'Lunges', 'Calf Raises'] },
+        { day: 'Friday', workout: 'Full Body HIIT', exercises: ['Kettlebell Swings', 'Box Jumps', 'Battle Ropes'] },
+        { day: 'Saturday', workout: 'Active Recovery', exercises: ['Walking', 'Yoga', 'Stretching'] }
+      ];
     }
-  }, [user?.id]);
-
-  const getDaysUntilExpiry = () => {
-    if (!user?.membershipExpiry) return 0;
-    const today = new Date();
-    const expiry = new Date(user.membershipExpiry);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
   };
 
-  const daysUntilExpiry = getDaysUntilExpiry();
+  const workoutPlan = getWorkoutPlan();
+  const completionRate = Math.round((completedWorkouts.length / workoutPlan.length) * 100);
+
+  const toggleWorkoutCompletion = (day: string) => {
+    if (completedWorkouts.includes(day)) {
+      setCompletedWorkouts(completedWorkouts.filter(d => d !== day));
+    } else {
+      setCompletedWorkouts([...completedWorkouts, day]);
+    }
+  };
+
+  // Calculate days until membership expiry
+  const getMembershipStatus = () => {
+    if (!user?.membershipExpiry) return { status: 'unknown', days: 0 };
+    
+    const today = new Date();
+    const expiry = new Date(user.membershipExpiry);
+    const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft < 0) return { status: 'expired', days: Math.abs(daysLeft) };
+    if (daysLeft <= 30) return { status: 'expiring', days: daysLeft };
+    return { status: 'active', days: daysLeft };
+  };
+
+  const membershipStatus = getMembershipStatus();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <NavigationBar />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Welcome back, {user?.name}! 💪
           </h1>
           <p className="text-gray-600">
-            Ready to crush your {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'} goals today?
+            Ready to crush your {user?.goal?.replace('_', ' ')} goals today?
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white">
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Weekly Progress</CardTitle>
-              <TrendingUp className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">This Week</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{Math.round(weeklyProgress)}%</div>
-              <Progress value={weeklyProgress} className="mt-2 bg-emerald-400" />
+              <div className="text-2xl font-bold">{completionRate}%</div>
+              <p className="text-xs text-muted-foreground">
+                {completedWorkouts.length} of {workoutPlan.length} workouts
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-              <Target className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Streak</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{streak} days</div>
-              <p className="text-xs text-blue-100 mt-1">Keep it up!</p>
+              <div className="text-2xl font-bold">7</div>
+              <p className="text-xs text-muted-foreground">days active</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Workouts</CardTitle>
-              <Calendar className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Goal</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{completedWorkouts.length}</div>
-              <p className="text-xs text-purple-100 mt-1">All time</p>
+              <div className="text-2xl font-bold capitalize">
+                {user?.goal?.replace('_', ' ')}
+              </div>
+              <p className="text-xs text-muted-foreground">current focus</p>
             </CardContent>
           </Card>
 
-          <Card className={`${daysUntilExpiry <= 30 ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-green-500 to-green-600'} text-white`}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Membership</CardTitle>
-              <Clock className="h-4 w-4" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{daysUntilExpiry} days</div>
-              <p className="text-xs opacity-90 mt-1">
-                {daysUntilExpiry <= 30 ? 'Renew soon!' : 'Until expiry'}
+              <div className="text-2xl font-bold">
+                {membershipStatus.days}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {membershipStatus.status === 'expired' ? 'days expired' : 'days left'}
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Membership Alert */}
-        {daysUntilExpiry <= 30 && (
-          <Card className="mb-8 border-red-200 bg-red-50">
-            <CardHeader>
-              <CardTitle className="text-red-700 flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Membership Expiring Soon
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-red-600 mb-4">
-                Your membership expires in {daysUntilExpiry} days. Contact the gym to renew your membership.
-              </p>
-              <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
-                Contact Gym
-              </Button>
+        {(membershipStatus.status === 'expiring' || membershipStatus.status === 'expired') && (
+          <Card className="mb-8 border-orange-200 bg-orange-50">
+            <CardContent className="flex items-center space-x-4 pt-6">
+              <AlertTriangle className="h-8 w-8 text-orange-500" />
+              <div>
+                <h3 className="font-semibold text-orange-800">
+                  {membershipStatus.status === 'expired' ? 'Membership Expired' : 'Membership Expiring Soon'}
+                </h3>
+                <p className="text-orange-700">
+                  {membershipStatus.status === 'expired' 
+                    ? `Your membership expired ${membershipStatus.days} days ago. Please renew to continue.`
+                    : `Your membership expires in ${membershipStatus.days} days. Contact the gym to renew.`
+                  }
+                </p>
+                <p className="text-sm text-orange-600 mt-1">
+                  Expiry Date: {user?.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'Not set'}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Main Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow duration-300">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Weekly Progress */}
+          <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-emerald-500" />
-                Today's Workout
-              </CardTitle>
+              <CardTitle>This Week's Progress</CardTitle>
               <CardDescription>
-                Your personalized {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'} workout plan
+                Your {user?.goal?.replace('_', ' ')} workout plan
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">
-                Ready to tackle your workout? Your plan is designed specifically for your goals.
-              </p>
-              <Link to="/workout-plan">
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600">
-                  View Workout Plan
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-500" />
-                Your Profile
-              </CardTitle>
-              <CardDescription>
-                Manage your account and fitness preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Goal:</span>
-                  <Badge variant="secondary">
-                    {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
-                  </Badge>
+              <div className="mb-6">
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Weekly Completion</span>
+                  <span>{completionRate}%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Member since:</span>
-                  <span className="text-gray-800">
-                    {user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
+                <Progress value={completionRate} className="h-2" />
               </div>
-              <Link to="/profile">
-                <Button variant="outline" className="w-full">
-                  Manage Profile
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your workout history from the past week</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {completedWorkouts.length > 0 ? (
-              <div className="space-y-2">
-                {completedWorkouts.slice(-5).reverse().map((date, index) => (
-                  <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <span className="text-gray-600">Workout completed</span>
-                    <Badge variant="outline" className="text-green-600 border-green-200">
-                      {new Date(date).toLocaleDate()}
-                    </Badge>
+              
+              <div className="space-y-4">
+                {workoutPlan.map((workout) => (
+                  <div key={workout.day} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-sm font-medium text-gray-500 w-20">
+                          {workout.day}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{workout.workout}</h3>
+                          <p className="text-sm text-gray-600">
+                            {workout.exercises.slice(0, 2).join(', ')}
+                            {workout.exercises.length > 2 && '...'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      variant={completedWorkouts.includes(workout.day) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleWorkoutCompletion(workout.day)}
+                      className={completedWorkouts.includes(workout.day) ? "bg-green-500 hover:bg-green-600" : ""}
+                    >
+                      {completedWorkouts.includes(workout.day) ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Done
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-4 h-4 mr-2" />
+                          Mark Done
+                        </>
+                      )}
+                    </Button>
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">
-                No workouts completed yet. Start your first workout today!
-              </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats & Motivational Card */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Current Streak</span>
+                  <Badge variant="secondary">7 days</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Best Streak</span>
+                  <Badge variant="secondary">14 days</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">This Month</span>
+                  <Badge variant="secondary">18 workouts</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Member Since</span>
+                  <Badge variant="outline">{user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>💡 Today's Motivation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 italic">
+                  "The only bad workout is the one that didn't happen. Keep pushing forward!"
+                </p>
+                <div className="mt-4 p-3 bg-emerald-50 rounded-lg">
+                  <p className="text-sm font-medium text-emerald-800">
+                    🎯 Focus on {user?.goal === 'muscle_gain' ? 'progressive overload' : 'consistency and intensity'} today!
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
