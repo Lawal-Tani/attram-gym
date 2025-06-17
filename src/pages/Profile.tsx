@@ -1,0 +1,292 @@
+
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { User, Target, Calendar, Clock, Edit2, Save, X } from 'lucide-react';
+import NavigationBar from '@/components/NavigationBar';
+import { useToast } from '@/hooks/use-toast';
+
+const Profile = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: user?.name || '',
+    goal: user?.goal || 'weight_loss'
+  });
+
+  const handleSave = () => {
+    // In a real app, this would update the user in the database
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been updated successfully.",
+    });
+    setIsEditing(false);
+  };
+
+  const getDaysUntilExpiry = () => {
+    if (!user?.membershipExpiry) return 0;
+    const today = new Date();
+    const expiry = new Date(user.membershipExpiry);
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const getMembershipDuration = () => {
+    if (!user?.startDate) return 0;
+    const start = new Date(user.startDate);
+    const today = new Date();
+    const diffTime = today.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysUntilExpiry = getDaysUntilExpiry();
+  const membershipDays = getMembershipDuration();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+      <NavigationBar />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              Your Profile
+            </h1>
+            <p className="text-gray-600">
+              Manage your account information and fitness preferences
+            </p>
+          </div>
+
+          {/* Profile Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-emerald-500" />
+                  Personal Information
+                </CardTitle>
+                {!isEditing ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={handleSave}
+                      className="bg-emerald-500 hover:bg-emerald-600"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!isEditing ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Full Name</Label>
+                      <p className="text-lg font-medium text-gray-800 mt-1">{user?.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Email</Label>
+                      <p className="text-lg font-medium text-gray-800 mt-1">{user?.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Fitness Goal</Label>
+                      <div className="mt-1">
+                        <Badge variant="secondary" className="text-sm">
+                          {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Account Type</Label>
+                      <div className="mt-1">
+                        <Badge 
+                          variant={user?.role === 'admin' ? 'default' : 'secondary'}
+                          className="text-sm capitalize"
+                        >
+                          {user?.role}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={editData.name}
+                      onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="goal">Fitness Goal</Label>
+                    <Select 
+                      value={editData.goal} 
+                      onValueChange={(value: 'weight_loss' | 'muscle_gain') => 
+                        setEditData({ ...editData, goal: value })
+                      }
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weight_loss">Weight Loss</SelectItem>
+                        <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Membership Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-500" />
+                Membership Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Start Date</Label>
+                    <p className="text-lg font-medium text-gray-800 mt-1">
+                      {user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Expiry Date</Label>
+                    <p className="text-lg font-medium text-gray-800 mt-1">
+                      {user?.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Days as Member</Label>
+                    <p className="text-lg font-medium text-gray-800 mt-1">{membershipDays} days</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Days Until Expiry</Label>
+                    <div className="mt-1">
+                      <Badge 
+                        variant={daysUntilExpiry <= 30 ? "destructive" : "secondary"}
+                        className="text-sm"
+                      >
+                        {daysUntilExpiry} days
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {daysUntilExpiry <= 30 && (
+                <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-700 mb-2">
+                    <Clock className="h-5 w-5" />
+                    <span className="font-medium">Membership Expiring Soon</span>
+                  </div>
+                  <p className="text-red-600 text-sm">
+                    Your membership expires in {daysUntilExpiry} days. Please contact the gym to renew your membership to continue accessing all features.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-3 border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    Contact Gym
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Fitness Goal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-purple-500" />
+                Your Fitness Journey
+              </CardTitle>
+              <CardDescription>
+                Information about your current fitness goal and recommendations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg">
+                  <h4 className="font-medium text-gray-800 mb-2">
+                    Current Goal: {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {user?.goal === 'weight_loss' 
+                      ? 'Focus on high-intensity workouts, cardio, and maintaining a caloric deficit for optimal weight loss results.'
+                      : 'Emphasize strength training, progressive overload, and adequate nutrition to build lean muscle mass effectively.'
+                    }
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="p-3 bg-white border rounded-lg">
+                    <h5 className="font-medium text-gray-800 mb-2">Recommended Frequency</h5>
+                    <p className="text-gray-600">
+                      {user?.goal === 'weight_loss' 
+                        ? '5-6 days per week with mix of cardio and strength training'
+                        : '4-5 days per week focusing on different muscle groups'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div className="p-3 bg-white border rounded-lg">
+                    <h5 className="font-medium text-gray-800 mb-2">Key Focus Areas</h5>
+                    <p className="text-gray-600">
+                      {user?.goal === 'weight_loss' 
+                        ? 'Cardiovascular endurance, full-body circuits, core strength'
+                        : 'Progressive overload, compound movements, adequate recovery'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
