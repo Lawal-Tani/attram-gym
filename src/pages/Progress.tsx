@@ -1,11 +1,11 @@
 
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Calendar, TrendingUp, Award, Target, Dumbbell, Clock } from 'lucide-react';
 import NavigationBar from '@/components/NavigationBar';
 
@@ -143,7 +143,7 @@ const ProgressPage = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="day" />
                       <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Tooltip />
                       <Bar dataKey="workouts" fill="#22c55e" name="Workouts" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -175,7 +175,7 @@ const ProgressPage = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <ChartTooltip />
+                      <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -196,7 +196,7 @@ const ProgressPage = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Tooltip />
                       <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -290,3 +290,4 @@ const ProgressPage = () => {
 };
 
 export default ProgressPage;
+
