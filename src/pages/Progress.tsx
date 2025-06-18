@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -54,7 +53,7 @@ const chartConfig = {
   },
 };
 
-const Progress = () => {
+const ProgressPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
 
   return (
@@ -289,4 +288,4 @@ const Progress = () => {
   );
 };
 
-export default Progress;
+export default ProgressPage;
