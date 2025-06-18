@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -136,9 +137,9 @@ const ProgressPage = () => {
                 <CardDescription>Your workout frequency and duration this week</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[300px]">
+                <div className="w-full h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyProgress}>
+                    <BarChart data={weeklyProgress} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="day" />
                       <YAxis />
@@ -146,7 +147,7 @@ const ProgressPage = () => {
                       <Bar dataKey="workouts" fill="#22c55e" name="Workouts" />
                     </BarChart>
                   </ResponsiveContainer>
-                </ChartContainer>
+                </div>
               </CardContent>
             </Card>
 
@@ -157,9 +158,9 @@ const ProgressPage = () => {
                 <CardDescription>Breakdown of your workout types</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[300px]">
+                <div className="w-full h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                       <Pie
                         data={workoutTypes}
                         cx="50%"
@@ -177,7 +178,7 @@ const ProgressPage = () => {
                       <ChartTooltip />
                     </PieChart>
                   </ResponsiveContainer>
-                </ChartContainer>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -189,9 +190,9 @@ const ProgressPage = () => {
                 <CardDescription>Track your lifting progress over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[400px]">
+                <div className="w-full h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={strengthProgress}>
+                    <LineChart data={strengthProgress} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
@@ -199,7 +200,7 @@ const ProgressPage = () => {
                       <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
-                </ChartContainer>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
