@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Home, Target, User, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { Dumbbell, Home, Target, User, Settings, LogOut, Moon, Sun, BarChart3 } from 'lucide-react';
 
 const NavigationBar = () => {
   const { user, logout } = useAuth();
@@ -45,106 +45,13 @@ const NavigationBar = () => {
   }, []);
 
   return (
-    <nav className="bg-background shadow-sm border-b border-border">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <Dumbbell className="h-6 w-6 text-emerald-500" />
-            <span className="text-xl font-bold text-foreground">Attram Gym</span>
-          </Link>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/dashboard" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/dashboard') 
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
-                  : 'text-muted-foreground hover:text-emerald-600'
-              }`}
-            >
-              <Home className="h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
-
-            <Link 
-              to="/workout-plan" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/workout-plan') 
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
-                  : 'text-muted-foreground hover:text-emerald-600'
-              }`}
-            >
-              <Target className="h-4 w-4" />
-              <span>Workout</span>
-            </Link>
-
-            <Link 
-              to="/profile" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/profile') 
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
-                  : 'text-muted-foreground hover:text-emerald-600'
-              }`}
-            >
-              <User className="h-4 w-4" />
-              <span>Profile</span>
-            </Link>
-
-            {user?.role === 'admin' && (
-              <Link 
-                to="/admin" 
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/admin') 
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
-                    : 'text-muted-foreground hover:text-blue-600'
-                }`}
-              >
-                <Settings className="h-4 w-4" />
-                <span>Admin</span>
-                <Badge variant="secondary" className="text-xs">ADMIN</Badge>
-              </Link>
-            )}
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Dark Mode Toggle */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleDarkMode}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-foreground">{user?.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {user?.goal?.replace('_', ' ')} • {user?.role}
-              </p>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={logout}
-              className="text-muted-foreground hover:text-red-600"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:ml-2 sm:inline">Logout</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t border-border bg-muted/50">
-        <div className="flex justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background shadow-lg border-t border-border z-50">
+      {/* Mobile Navigation - Always visible on mobile */}
+      <div className="md:hidden">
+        <div className="flex justify-around py-3">
           <Link 
             to="/dashboard"
-            className={`flex flex-col items-center py-2 px-4 text-xs ${
+            className={`flex flex-col items-center py-2 px-3 text-xs transition-colors ${
               isActive('/dashboard') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
@@ -153,7 +60,7 @@ const NavigationBar = () => {
           </Link>
           <Link 
             to="/workout-plan"
-            className={`flex flex-col items-center py-2 px-4 text-xs ${
+            className={`flex flex-col items-center py-2 px-3 text-xs transition-colors ${
               isActive('/workout-plan') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
@@ -161,8 +68,17 @@ const NavigationBar = () => {
             <span>Workout</span>
           </Link>
           <Link 
+            to="/progress"
+            className={`flex flex-col items-center py-2 px-3 text-xs transition-colors ${
+              isActive('/progress') ? 'text-emerald-600' : 'text-muted-foreground'
+            }`}
+          >
+            <BarChart3 className="h-5 w-5 mb-1" />
+            <span>Progress</span>
+          </Link>
+          <Link 
             to="/profile"
-            className={`flex flex-col items-center py-2 px-4 text-xs ${
+            className={`flex flex-col items-center py-2 px-3 text-xs transition-colors ${
               isActive('/profile') ? 'text-emerald-600' : 'text-muted-foreground'
             }`}
           >
@@ -172,7 +88,7 @@ const NavigationBar = () => {
           {user?.role === 'admin' && (
             <Link 
               to="/admin"
-              className={`flex flex-col items-center py-2 px-4 text-xs ${
+              className={`flex flex-col items-center py-2 px-3 text-xs transition-colors ${
                 isActive('/admin') ? 'text-blue-600' : 'text-muted-foreground'
               }`}
             >
@@ -180,13 +96,114 @@ const NavigationBar = () => {
               <span>Admin</span>
             </Link>
           )}
-          <button
-            onClick={toggleDarkMode}
-            className="flex flex-col items-center py-2 px-4 text-xs text-muted-foreground"
-          >
-            {isDarkMode ? <Sun className="h-5 w-5 mb-1" /> : <Moon className="h-5 w-5 mb-1" />}
-            <span>Theme</span>
-          </button>
+        </div>
+      </div>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <Dumbbell className="h-6 w-6 text-emerald-500" />
+              <span className="text-xl font-bold text-foreground">Attram Gym</span>
+            </Link>
+
+            {/* Navigation Links */}
+            <div className="flex items-center space-x-6">
+              <Link 
+                to="/dashboard" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/dashboard') 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                    : 'text-muted-foreground hover:text-emerald-600'
+                }`}
+              >
+                <Home className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+
+              <Link 
+                to="/workout-plan" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/workout-plan') 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                    : 'text-muted-foreground hover:text-emerald-600'
+                }`}
+              >
+                <Target className="h-4 w-4" />
+                <span>Workout</span>
+              </Link>
+
+              <Link 
+                to="/progress" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/progress') 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                    : 'text-muted-foreground hover:text-emerald-600'
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Progress</span>
+              </Link>
+
+              <Link 
+                to="/profile" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/profile') 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' 
+                    : 'text-muted-foreground hover:text-emerald-600'
+                }`}
+              >
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+
+              {user?.role === 'admin' && (
+                <Link 
+                  to="/admin" 
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/admin') 
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                      : 'text-muted-foreground hover:text-blue-600'
+                  }`}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Admin</span>
+                  <Badge variant="secondary" className="text-xs">ADMIN</Badge>
+                </Link>
+              )}
+            </div>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              {/* Dark Mode Toggle */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={toggleDarkMode}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-medium text-foreground">{user?.name}</p>
+                <p className="text-xs text-muted-foreground capitalize">
+                  {user?.goal?.replace('_', ' ')} • {user?.role}
+                </p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={logout}
+                className="text-muted-foreground hover:text-red-600"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:ml-2 sm:inline">Logout</span>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

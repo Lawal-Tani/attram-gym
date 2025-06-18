@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import WorkoutPlan from "./pages/WorkoutPlan";
 import Profile from "./pages/Profile";
+import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -40,6 +41,11 @@ const App = () => {
               <Route path="/workout-plan" element={
                 <ProtectedRoute>
                   <WorkoutPlan />
+                </ProtectedRoute>
+              } />
+              <Route path="/progress" element={
+                <ProtectedRoute>
+                  <Progress />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
