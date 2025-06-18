@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import NavigationBar from '@/components/NavigationBar';
@@ -62,16 +61,16 @@ const Dashboard = () => {
   const membershipStatus = getMembershipStatus();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <NavigationBar />
       
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome back, {user?.name}! 💪
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Ready to crush your {user?.goal?.replace('_', ' ')} goals today?
           </p>
         </div>
@@ -133,20 +132,20 @@ const Dashboard = () => {
 
         {/* Membership Alert */}
         {(membershipStatus.status === 'expiring' || membershipStatus.status === 'expired') && (
-          <Card className="mb-8 border-orange-200 bg-orange-50">
+          <Card className="mb-8 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
             <CardContent className="flex items-center space-x-4 pt-6">
               <AlertTriangle className="h-8 w-8 text-orange-500" />
               <div>
-                <h3 className="font-semibold text-orange-800">
+                <h3 className="font-semibold text-orange-800 dark:text-orange-200">
                   {membershipStatus.status === 'expired' ? 'Membership Expired' : 'Membership Expiring Soon'}
                 </h3>
-                <p className="text-orange-700">
+                <p className="text-orange-700 dark:text-orange-300">
                   {membershipStatus.status === 'expired' 
                     ? `Your membership expired ${membershipStatus.days} days ago. Please renew to continue.`
                     : `Your membership expires in ${membershipStatus.days} days. Contact the gym to renew.`
                   }
                 </p>
-                <p className="text-sm text-orange-600 mt-1">
+                <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
                   Expiry Date: {user?.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'Not set'}
                 </p>
               </div>
@@ -174,15 +173,15 @@ const Dashboard = () => {
               
               <div className="space-y-4">
                 {workoutPlan.map((workout) => (
-                  <div key={workout.day} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div key={workout.day} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <div className="text-sm font-medium text-gray-500 w-20">
+                        <div className="text-sm font-medium text-muted-foreground w-20">
                           {workout.day}
                         </div>
                         <div>
                           <h3 className="font-semibold">{workout.workout}</h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             {workout.exercises.slice(0, 2).join(', ')}
                             {workout.exercises.length > 2 && '...'}
                           </p>
@@ -222,19 +221,19 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Current Streak</span>
+                  <span className="text-sm text-muted-foreground">Current Streak</span>
                   <Badge variant="secondary">7 days</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Best Streak</span>
+                  <span className="text-sm text-muted-foreground">Best Streak</span>
                   <Badge variant="secondary">14 days</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">This Month</span>
+                  <span className="text-sm text-muted-foreground">This Month</span>
                   <Badge variant="secondary">18 workouts</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Member Since</span>
+                  <span className="text-sm text-muted-foreground">Member Since</span>
                   <Badge variant="outline">{user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}</Badge>
                 </div>
               </CardContent>
@@ -245,11 +244,11 @@ const Dashboard = () => {
                 <CardTitle>💡 Today's Motivation</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 italic">
+                <p className="text-sm text-muted-foreground italic">
                   "The only bad workout is the one that didn't happen. Keep pushing forward!"
                 </p>
-                <div className="mt-4 p-3 bg-emerald-50 rounded-lg">
-                  <p className="text-sm font-medium text-emerald-800">
+                <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950 rounded-lg">
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
                     🎯 Focus on {user?.goal === 'muscle_gain' ? 'progressive overload' : 'consistency and intensity'} today!
                   </p>
                 </div>
