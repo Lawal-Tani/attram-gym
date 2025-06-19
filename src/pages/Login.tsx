@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,10 +74,10 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+          <div className="inline-flex items-center gap-2 text-2xl font-bold text-emerald-600">
             <Dumbbell className="h-8 w-8" />
             Attram Gym
-          </Link>
+          </div>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
