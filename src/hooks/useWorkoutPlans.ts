@@ -66,7 +66,9 @@ export const useWorkoutPlans = () => {
       if (customError) throw customError;
 
       if (customPlans && customPlans.length > 0) {
-        setWorkoutPlans(customPlans as WorkoutPlan[]);
+        // Fetch exercise videos and merge with workout plans
+        const plansWithVideos = await addVideoUrlsToPlans(customPlans as WorkoutPlan[]);
+        setWorkoutPlans(plansWithVideos);
       } else {
         // If no custom plans, create default plans based on user goal
         await createDefaultWorkoutPlans();
@@ -78,6 +80,37 @@ export const useWorkoutPlans = () => {
       setWorkoutPlans(getHardcodedPlans(user.goal));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addVideoUrlsToPlans = async (plans: WorkoutPlan[]): Promise<WorkoutPlan[]> => {
+    try {
+      // Get all exercise videos
+      const { data: exerciseVideos, error } = await supabase
+        .from('exercise_videos')
+        .select('exercise_name, video_url');
+
+      if (error) {
+        console.error('Error fetching exercise videos:', error);
+        return plans;
+      }
+
+      // Create a map for quick lookup
+      const videoMap = new Map(
+        exerciseVideos?.map(video => [video.exercise_name.toLowerCase(), video.video_url]) || []
+      );
+
+      // Add video URLs to exercises
+      return plans.map(plan => ({
+        ...plan,
+        exercises: plan.exercises.map(exercise => ({
+          ...exercise,
+          video_url: videoMap.get(exercise.name.toLowerCase())
+        }))
+      }));
+    } catch (error) {
+      console.error('Error adding video URLs:', error);
+      return plans;
     }
   };
 
@@ -124,7 +157,7 @@ export const useWorkoutPlans = () => {
 
       if (exerciseError) throw exerciseError;
 
-      // Fetch the complete data
+      // Fetch the complete data with video URLs
       await fetchWorkoutPlans();
     } catch (err) {
       console.error('Error creating default workout plans:', err);
@@ -136,7 +169,7 @@ export const useWorkoutPlans = () => {
 };
 
 const getHardcodedPlans = (goal: string): WorkoutPlan[] => {
-  // Fallback hardcoded plans with video URLs
+  // Fallback hardcoded plans - videos will be loaded from database when available
   const weightLossPlan = [
     {
       id: 'temp-1',
@@ -144,11 +177,11 @@ const getHardcodedPlans = (goal: string): WorkoutPlan[] => {
       title: 'Full Body Circuit',
       goal_type: 'weight_loss',
       exercises: [
-        { id: '1', name: 'Jumping Jacks', sets: '3', reps: '30 seconds', rest_time: '30s', order_index: 0, video_url: 'https://www.youtube.com/watch?v=2W4ZNSwoW_4' },
-        { id: '2', name: 'Push-ups', sets: '3', reps: '10-15', rest_time: '45s', order_index: 1, video_url: 'https://www.youtube.com/watch?v=IODxDxX7oi4' },
-        { id: '3', name: 'Squats', sets: '3', reps: '15-20', rest_time: '45s', order_index: 2, video_url: 'https://www.youtube.com/watch?v=YaXPRqUwItQ' },
-        { id: '4', name: 'Mountain Climbers', sets: '3', reps: '30 seconds', rest_time: '30s', order_index: 3, video_url: 'https://www.youtube.com/watch?v=wQq3ybaLAuE' },
-        { id: '5', name: 'Plank', sets: '3', reps: '30-60s', rest_time: '60s', order_index: 4, video_url: 'https://www.youtube.com/watch?v=pSHjTRCQxIw' }
+        { id: '1', name: 'Jumping Jacks', sets: '3', reps: '30 seconds', rest_time: '30s', order_index: 0 },
+        { id: '2', name: 'Push-ups', sets: '3', reps: '10-15', rest_time: '45s', order_index: 1 },
+        { id: '3', name: 'Squats', sets: '3', reps: '15-20', rest_time: '45s', order_index: 2 },
+        { id: '4', name: 'Mountain Climbers', sets: '3', reps: '30 seconds', rest_time: '30s', order_index: 3 },
+        { id: '5', name: 'Plank', sets: '3', reps: '30-60s', rest_time: '60s', order_index: 4 }
       ]
     }
   ];
@@ -160,10 +193,10 @@ const getHardcodedPlans = (goal: string): WorkoutPlan[] => {
       title: 'Chest & Triceps',
       goal_type: 'muscle_gain',
       exercises: [
-        { id: '1', name: 'Bench Press', sets: '4', reps: '8-10', rest_time: '90s', order_index: 0, video_url: 'https://www.youtube.com/watch?v=rT7DgCr-3pg' },
-        { id: '2', name: 'Incline Dumbbell Press', sets: '3', reps: '10-12', rest_time: '60s', order_index: 1, video_url: 'https://www.youtube.com/watch?v=8iPEnn-ltC8' },
-        { id: '3', name: 'Dips', sets: '3', reps: '10-15', rest_time: '60s', order_index: 2, video_url: 'https://www.youtube.com/watch?v=2z8JmcrW-As' },
-        { id: '4', name: 'Tricep Extensions', sets: '3', reps: '12-15', rest_time: '45s', order_index: 3, video_url: 'https://www.youtube.com/watch?v=L4YjTkyaUAA' }
+        { id: '1', name: 'Bench Press', sets: '4', reps: '8-10', rest_time: '90s', order_index: 0 },
+        { id: '2', name: 'Incline Dumbbell Press', sets: '3', reps: '10-12', rest_time: '60s', order_index: 1 },
+        { id: '3', name: 'Dips', sets: '3', reps: '10-15', rest_time: '60s', order_index: 2 },
+        { id: '4', name: 'Tricep Extensions', sets: '3', reps: '12-15', rest_time: '45s', order_index: 3 }
       ]
     }
   ];
