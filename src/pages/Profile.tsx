@@ -12,7 +12,7 @@ import NavigationBar from '@/components/NavigationBar';
 import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -30,17 +30,17 @@ const Profile = () => {
   };
 
   const getDaysUntilExpiry = () => {
-    if (!user?.membershipExpiry) return 0;
+    if (!user?.membership_expiry) return 0;
     const today = new Date();
-    const expiry = new Date(user.membershipExpiry);
+    const expiry = new Date(user.membership_expiry);
     const diffTime = expiry.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
   const getMembershipDuration = () => {
-    if (!user?.startDate) return 0;
-    const start = new Date(user.startDate);
+    if (!user?.start_date) return 0;
+    const start = new Date(user.start_date);
     const today = new Date();
     const diffTime = today.getTime() - start.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -114,7 +114,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Email</Label>
-                      <p className="text-lg font-medium text-gray-800 mt-1">{user?.email}</p>
+                      <p className="text-lg font-medium text-gray-800 mt-1">{session?.user?.email}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Fitness Goal</Label>
@@ -184,13 +184,13 @@ const Profile = () => {
                   <div>
                     <Label className="text-sm font-medium text-gray-600">Start Date</Label>
                     <p className="text-lg font-medium text-gray-800 mt-1">
-                      {user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}
+                      {user?.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">Expiry Date</Label>
                     <p className="text-lg font-medium text-gray-800 mt-1">
-                      {user?.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'N/A'}
+                      {user?.membership_expiry ? new Date(user.membership_expiry).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>

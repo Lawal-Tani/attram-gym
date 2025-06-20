@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import NavigationBar from '@/components/NavigationBar';
@@ -47,10 +48,10 @@ const Dashboard = () => {
 
   // Calculate days until membership expiry
   const getMembershipStatus = () => {
-    if (!user?.membershipExpiry) return { status: 'unknown', days: 0 };
+    if (!user?.membership_expiry) return { status: 'unknown', days: 0 };
     
     const today = new Date();
-    const expiry = new Date(user.membershipExpiry);
+    const expiry = new Date(user.membership_expiry);
     const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysLeft < 0) return { status: 'expired', days: Math.abs(daysLeft) };
@@ -146,7 +147,7 @@ const Dashboard = () => {
                   }
                 </p>
                 <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
-                  Expiry Date: {user?.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'Not set'}
+                  Expiry Date: {user?.membership_expiry ? new Date(user.membership_expiry).toLocaleDateString() : 'Not set'}
                 </p>
               </div>
             </CardContent>
@@ -234,7 +235,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Member Since</span>
-                  <Badge variant="outline">{user?.startDate ? new Date(user.startDate).toLocaleDateString() : 'N/A'}</Badge>
+                  <Badge variant="outline">{user?.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}</Badge>
                 </div>
               </CardContent>
             </Card>
