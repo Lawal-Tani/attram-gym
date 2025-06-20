@@ -52,7 +52,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
           
           if (!error && profile) {
-            setUser(profile);
+            // Ensure the profile matches our UserProfile interface
+            setUser({
+              id: profile.id,
+              name: profile.name,
+              goal: profile.goal as 'weight_loss' | 'muscle_gain',
+              role: profile.role as 'user' | 'admin',
+              membership_expiry: profile.membership_expiry,
+              start_date: profile.start_date
+            });
           }
         } else {
           setUser(null);
@@ -73,7 +81,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single()
           .then(({ data: profile, error }) => {
             if (!error && profile) {
-              setUser(profile);
+              setUser({
+                id: profile.id,
+                name: profile.name,
+                goal: profile.goal as 'weight_loss' | 'muscle_gain',
+                role: profile.role as 'user' | 'admin',
+                membership_expiry: profile.membership_expiry,
+                start_date: profile.start_date
+              });
             }
             setLoading(false);
           });
