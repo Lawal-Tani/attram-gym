@@ -1,21 +1,23 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   name: string;
-  email: string;
   goal: 'weight_loss' | 'muscle_gain';
   role: 'user' | 'admin';
-  membershipExpiry: string;
-  startDate: string;
+  membership_expiry: string;
+  start_date: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: Partial<User> & { password: string }) => Promise<boolean>;
+  register: (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain' }) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -30,73 +32,99 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        
+        if (session?.user) {
+          // Fetch user profile from our users table
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (!error && profile) {
+            setUser(profile);
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
     // Check for existing session
-    const savedUser = localStorage.getItem('gym_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        // Fetch user profile
+        supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile, error }) => {
+            if (!error && profile) {
+              setUser(profile);
+            }
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Mock authentication - in real app this would connect to Supabase
-      const mockUsers = [
-        {
-          id: '1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: 'password',
-          goal: 'muscle_gain' as const,
-          role: 'user' as const,
-          membershipExpiry: '2024-12-31',
-          startDate: '2024-01-01'
-        },
-        {
-          id: '2',
-          name: 'Admin User',
-          email: 'admin@attram.com',
-          password: 'admin123',
-          goal: 'weight_loss' as const,
-          role: 'admin' as const,
-          membershipExpiry: '2025-12-31',
-          startDate: '2023-01-01'
-        }
-      ];
-
-      const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        const { password: _, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem('gym_user', JSON.stringify(userWithoutPassword));
-        return true;
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        return false;
       }
-      return false;
+      
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
     }
   };
 
-  const register = async (userData: Partial<User> & { password: string }): Promise<boolean> => {
+  const register = async (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain' }): Promise<boolean> => {
     try {
-      // Mock registration - in real app this would connect to Supabase
-      const newUser: User = {
-        id: Date.now().toString(),
-        name: userData.name || '',
-        email: userData.email || '',
-        goal: userData.goal || 'weight_loss',
-        role: 'user',
-        membershipExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        startDate: new Date().toISOString().split('T')[0]
-      };
+      const redirectUrl = `${window.location.origin}/`;
       
-      setUser(newUser);
-      localStorage.setItem('gym_user', JSON.stringify(newUser));
+      const { error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: userData.name,
+            goal: userData.goal
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('Registration error:', error);
+        return false;
+      }
+      
       return true;
     } catch (error) {
       console.error('Registration error:', error);
@@ -104,13 +132,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('gym_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, session, login, logout, register, loading }}>
       {children}
     </AuthContext.Provider>
   );
