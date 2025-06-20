@@ -18,10 +18,11 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
+    if (user && !loading) {
+      console.log('User logged in, redirecting to dashboard:', user);
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -56,6 +57,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login error",
         description: "An unexpected error occurred. Please try again.",
@@ -118,6 +120,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Signup error:', error);
       toast({
         title: "Signup error",
         description: "An unexpected error occurred. Please try again.",
@@ -128,7 +131,17 @@ const Login = () => {
     }
   };
 
+  // Show loading spinner only when AuthContext is loading (initial auth check)
   if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  // Don't show login form if user is already authenticated
+  if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
@@ -172,6 +185,7 @@ const Login = () => {
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -183,6 +197,7 @@ const Login = () => {
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
@@ -202,6 +217,7 @@ const Login = () => {
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -213,15 +229,17 @@ const Login = () => {
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="goal">Fitness Goal</Label>
                     <select
                       id="goal"
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className="w-full p-2 border border-gray-300 rounded-md disabled:opacity-50"
                       value={signupData.goal}
                       onChange={(e) => setSignupData({ ...signupData, goal: e.target.value as 'weight_loss' | 'muscle_gain' })}
+                      disabled={isLoading}
                     >
                       <option value="weight_loss">Weight Loss</option>
                       <option value="muscle_gain">Muscle Gain</option>
@@ -236,6 +254,7 @@ const Login = () => {
                       value={signupData.password}
                       onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -247,6 +266,7 @@ const Login = () => {
                       value={signupData.confirmPassword}
                       onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
