@@ -67,8 +67,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Supabase error fetching profile:', error.message);
+        // Try to load from cache on error
         const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
-        if (cached) setUser(JSON.parse(cached));
+        if (cached) {
+          try {
+            setUser(JSON.parse(cached));
+          } catch (parseError) {
+            console.error('Error parsing cached profile:', parseError);
+          }
+        }
       } else if (profile) {
         const typedProfile: UserProfile = {
           ...profile,
@@ -80,13 +87,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error('Unexpected error fetching user profile:', err);
+      // Try to load from cache on unexpected error
       const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
-      if (cached) setUser(JSON.parse(cached));
+      if (cached) {
+        try {
+          setUser(JSON.parse(cached));
+        } catch (parseError) {
+          console.error('Error parsing cached profile:', parseError);
+        }
+      }
     } finally {
       setIsFetching(false);
     }
-
   };
+
   const handleSessionChange = async (session: Session | null) => {
     setSession(session);
     if (session?.user) {
@@ -103,18 +117,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       setLoading(true);
       try {
-        const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
-        if (cachedSession) {
-          await handleSessionChange(JSON.parse(cachedSession));
+        // First try to get current session from Supabase
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          // Fallback to cached session if available
+          const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
+          if (cachedSession) {
+            try {
+              const parsedSession = JSON.parse(cachedSession);
+              await handleSessionChange(parsedSession);
+            } catch (parseError) {
+              console.error('Error parsing cached session:', parseError);
+              localStorage.removeItem(CACHE_KEYS.SESSION);
+              await handleSessionChange(null);
+            }
+          } else {
+            await handleSessionChange(null);
+          }
         } else {
-          const { data: { session } } = await supabase.auth.getSession();
           await handleSessionChange(session);
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
         setUser(null);
         setSession(null);
-      } finally {
         setLoading(false);
       }
     };
@@ -122,7 +150,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         await handleSessionChange(session);
       }
     );
@@ -132,8 +161,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return !error;
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (error) {
+        console.error('Login error:', error.message);
+        return false;
+      }
+      
+      return !!data.user;
     } catch (err) {
       console.error('Login error:', err);
       return false;
@@ -184,10 +222,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return false;
         }
 
-        localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(data.session));
-        setSession(data.session || null);
-        await fetchUserProfile(data.user.id);
-
         return true;
       }
 
@@ -199,11 +233,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem(CACHE_KEYS.SESSION);
-    if (user) localStorage.removeItem(CACHE_KEYS.PROFILE(user.id));
-    setUser(null);
-    setSession(null);
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem(CACHE_KEYS.SESSION);
+      if (user) localStorage.removeItem(CACHE_KEYS.PROFILE(user.id));
+      setUser(null);
+      setSession(null);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
   };
 
   return (
