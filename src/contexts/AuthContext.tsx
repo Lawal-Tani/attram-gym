@@ -35,6 +35,11 @@ const CACHE_KEYS = {
   PROFILE: (uid: string) => `pwa_profile_${uid}`
 };
 
+// Helper to check goal type safely
+const isValidGoal = (goal: any): goal is 'weight_loss' | 'muscle_gain' => {
+  return goal === 'weight_loss' || goal === 'muscle_gain';
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -65,8 +70,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
         if (cached) setUser(JSON.parse(cached));
       } else if (profile) {
-        localStorage.setItem(CACHE_KEYS.PROFILE(userId), JSON.stringify(profile));
-        setUser(profile);
+        const typedProfile: UserProfile = {
+          ...profile,
+          goal: isValidGoal(profile.goal) ? profile.goal : 'weight_loss',
+          role: profile.role === 'admin' ? 'admin' : 'user'
+        };
+        localStorage.setItem(CACHE_KEYS.PROFILE(userId), JSON.stringify(typedProfile));
+        setUser(typedProfile);
       }
     } catch (err) {
       console.error('Unexpected error fetching user profile:', err);
@@ -75,8 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsFetching(false);
     }
-  };
 
+  };
   const handleSessionChange = async (session: Session | null) => {
     setSession(session);
     if (session?.user) {
