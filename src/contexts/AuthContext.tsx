@@ -10,6 +10,8 @@ interface UserProfile {
   role: 'user' | 'admin';
   membership_expiry: string;
   start_date: string;
+  subscription_plan?: string;
+  payment_method?: string;
 }
 
 interface AuthContextType {
@@ -17,7 +19,7 @@ interface AuthContextType {
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain' }) => Promise<boolean>;
+  register: (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain'; subscription_plan: string }) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -39,6 +41,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
     
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting initial session:', error);
+        } else {
+          console.log('Initial session:', session?.user?.email);
+          setSession(session);
+          
+          if (session?.user) {
+            await fetchUserProfile(session.user.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -46,73 +69,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile from our users table
-          try {
-            console.log('Fetching user profile for:', session.user.id);
-            const { data: profile, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (!error && profile) {
-              console.log('User profile loaded:', profile);
-              setUser({
-                id: profile.id,
-                name: profile.name,
-                goal: profile.goal as 'weight_loss' | 'muscle_gain',
-                role: profile.role as 'user' | 'admin',
-                membership_expiry: profile.membership_expiry,
-                start_date: profile.start_date
-              });
-            } else {
-              console.error('Error fetching user profile:', error);
-              // Don't set user to null here - the session exists but profile fetch failed
-              // This could be a temporary network issue
-              if (error?.code === 'PGRST116') {
-                console.log('User profile not found, user may need to complete signup');
-              }
-              setUser(null);
-            }
-          } catch (error) {
-            console.error('Error in profile fetch:', error);
-            setUser(null);
-          }
+          await fetchUserProfile(session.user.id);
         } else {
           console.log('No session, clearing user');
           setUser(null);
         }
         
-        // Always set loading to false after processing auth state change
         setLoading(false);
       }
     );
 
-    // Check for existing session
-    const checkSession = async () => {
+    const fetchUserProfile = async (userId: string) => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.email, error);
+        console.log('Fetching user profile for:', userId);
+        const { data: profile, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
         
-        if (error) {
-          console.error('Error getting session:', error);
-          setLoading(false);
-          return;
+        if (!error && profile) {
+          console.log('User profile loaded:', profile);
+          setUser({
+            id: profile.id,
+            name: profile.name,
+            goal: profile.goal as 'weight_loss' | 'muscle_gain',
+            role: profile.role as 'user' | 'admin',
+            membership_expiry: profile.membership_expiry,
+            start_date: profile.start_date,
+            subscription_plan: profile.subscription_plan || 'basic',
+            payment_method: profile.payment_method || 'none'
+          });
+        } else {
+          console.error('Error fetching user profile:', error);
+          setUser(null);
         }
-        
-        // If no session, set loading to false immediately
-        if (!session) {
-          console.log('No initial session found');
-          setLoading(false);
-        }
-        // If session exists, the onAuthStateChange will handle it
       } catch (error) {
-        console.error('Error in checkSession:', error);
-        setLoading(false);
+        console.error('Error in profile fetch:', error);
+        setUser(null);
       }
     };
 
-    checkSession();
+    getInitialSession();
 
     return () => {
       console.log('AuthContext: Cleaning up auth listener');
@@ -141,18 +139,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain' }): Promise<boolean> => {
+  const register = async (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain'; subscription_plan: string }): Promise<boolean> => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             name: userData.name,
-            goal: userData.goal
+            goal: userData.goal,
+            subscription_plan: userData.subscription_plan
           }
         }
       });

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, Crown, Star, Zap } from 'lucide-react';
 
 const Login = () => {
   const { user, login, register, loading } = useAuth();
@@ -35,8 +35,33 @@ const Login = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    goal: 'weight_loss' as 'weight_loss' | 'muscle_gain'
+    goal: 'weight_loss' as 'weight_loss' | 'muscle_gain',
+    subscription_plan: 'basic'
   });
+
+  const subscriptionPlans = [
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: '$9.99/month',
+      icon: Star,
+      features: ['Access to basic workouts', 'Progress tracking', 'Basic nutrition tips']
+    },
+    {
+      id: 'premium',
+      name: 'Premium',
+      price: '$19.99/month',
+      icon: Crown,
+      features: ['All basic features', 'Personal trainer chat', 'Custom meal plans', 'Advanced analytics']
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '$29.99/month',
+      icon: Zap,
+      features: ['All premium features', '1-on-1 video sessions', 'Supplement recommendations', 'Priority support']
+    }
+  ];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +76,6 @@ const Login = () => {
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
-        // Don't navigate here, let useEffect handle it
       } else {
         toast({
           title: "Login failed",
@@ -99,7 +123,8 @@ const Login = () => {
         name: signupData.name,
         email: signupData.email,
         password: signupData.password,
-        goal: signupData.goal
+        goal: signupData.goal,
+        subscription_plan: signupData.subscription_plan
       });
 
       if (success) {
@@ -113,7 +138,8 @@ const Login = () => {
           email: '',
           password: '',
           confirmPassword: '',
-          goal: 'weight_loss'
+          goal: 'weight_loss',
+          subscription_plan: 'basic'
         });
       } else {
         toast({
@@ -134,7 +160,7 @@ const Login = () => {
     }
   };
 
-  // Show loading spinner only when AuthContext is loading (initial auth check)
+  // Show loading spinner only when AuthContext is loading
   if (loading) {
     console.log('Showing loading spinner - auth context loading');
     return (
@@ -164,7 +190,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Dumbbell className="h-8 w-8 text-emerald-600 mr-2" />
@@ -220,31 +246,34 @@ const Login = () => {
               </TabsContent>
               
               <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={signupData.name}
-                      onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
-                      required
-                      disabled={isSubmitting}
-                    />
+                <form onSubmit={handleSignup} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={signupData.name}
+                        onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={signupData.email}
+                        onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={signupData.email}
-                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="goal">Fitness Goal</Label>
                     <select
@@ -258,30 +287,66 @@ const Login = () => {
                       <option value="muscle_gain">Muscle Gain</option>
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                      required
-                      disabled={isSubmitting}
-                    />
+
+                  {/* Subscription Plans */}
+                  <div className="space-y-3">
+                    <Label>Choose Your Plan</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {subscriptionPlans.map((plan) => {
+                        const IconComponent = plan.icon;
+                        return (
+                          <div
+                            key={plan.id}
+                            className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                              signupData.subscription_plan === plan.id
+                                ? 'border-emerald-500 bg-emerald-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSignupData({ ...signupData, subscription_plan: plan.id })}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <IconComponent className="h-5 w-5 text-emerald-600" />
+                              <h4 className="font-medium">{plan.name}</h4>
+                            </div>
+                            <p className="text-lg font-bold text-emerald-600 mb-2">{plan.price}</p>
+                            <ul className="text-sm text-gray-600 space-y-1">
+                              {plan.features.map((feature, index) => (
+                                <li key={index}>• {feature}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={signupData.confirmPassword}
-                      onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                      required
-                      disabled={isSubmitting}
-                    />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Create a password"
+                        value={signupData.password}
+                        onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={signupData.confirmPassword}
+                        onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
+
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? "Creating account..." : "Create account"}
                   </Button>
