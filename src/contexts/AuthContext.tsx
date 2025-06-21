@@ -17,7 +17,7 @@ interface AuthContextType {
   user: UserProfile | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (userData: {
     name: string;
     email: string;
@@ -31,16 +31,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  SESSION: 'gym_session',
-  PROFILE: (uid: string) => `gym_profile_${uid}`
+  SESSION: 'gym_session_v2',
+  PROFILE: (uid: string) => `gym_profile_v2_${uid}`
 } as const;
 
+// Type guards with proper error logging
 const isValidGoal = (goal: unknown): goal is 'weight_loss' | 'muscle_gain' => {
-  return goal === 'weight_loss' || goal === 'muscle_gain';
+  const isValid = goal === 'weight_loss' || goal === 'muscle_gain';
+  if (!isValid) console.warn(`Invalid goal value: ${goal}`);
+  return isValid;
 };
 
 const isValidRole = (role: unknown): role is 'user' | 'admin' => {
-  return role === 'user' || role === 'admin';
+  const isValid = role === 'user' || role === 'admin';
+  if (!isValid) console.warn(`Invalid role value: ${role}`);
+  return isValid;
 };
 
 export const useAuth = () => {
@@ -55,155 +60,127 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(true);
 
+  // Enhanced profile loader with offline support
   const loadUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
-      console.log('Loading user profile for:', userId);
-      
-      const response = await supabase
+      // 1. Try network fetch
+      const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('id', userId);
+        .eq('id', userId)
+        .maybeSingle();
 
-      if (response.error) {
-        console.error('Database error:', response.error);
-        return null;
-      }
+      if (error) throw error;
+      if (!data) return null;
 
-      if (!response.data || response.data.length === 0) {
-        console.warn('No user profile found');
-        return null;
-      }
-
-      const profileData = response.data[0];
+      // 2. Validate and transform data
       const profile: UserProfile = {
-        id: profileData.id,
-        name: profileData.name || '',
-        goal: isValidGoal(profileData.goal) ? profileData.goal : 'weight_loss',
-        role: isValidRole(profileData.role) ? profileData.role : 'user',
-        membership_expiry: profileData.membership_expiry || '',
-        start_date: profileData.start_date || '',
-        subscription_plan: profileData.subscription_plan,
-        payment_method: profileData.payment_method,
+        id: data.id,
+        name: data.name || 'Anonymous',
+        goal: isValidGoal(data.goal) ? data.goal : 'weight_loss',
+        role: isValidRole(data.role) ? data.role : 'user',
+        membership_expiry: data.membership_expiry || new Date().toISOString(),
+        start_date: data.start_date || new Date().toISOString(),
+        subscription_plan: data.subscription_plan,
+        payment_method: data.payment_method,
       };
 
-      console.log('Profile loaded successfully:', profile);
+      // 3. Cache the profile
+      localStorage.setItem(STORAGE_KEYS.PROFILE(userId), JSON.stringify(profile));
       return profile;
+
     } catch (error) {
-      console.error('Error loading user profile:', error);
-      return null;
+      console.error('Profile load error:', error);
+      
+      // 4. Fallback to cached profile
+      const cached = localStorage.getItem(STORAGE_KEYS.PROFILE(userId));
+      return cached ? JSON.parse(cached) : null;
     }
   }, []);
 
+  // Unified auth state handler
   const updateAuthState = useCallback(async (newSession: Session | null) => {
-    console.log('Updating auth state, session exists:', !!newSession);
-    
-    setSession(newSession);
-    
-    if (newSession?.user) {
-      try {
+    if (!isMounted) return;
+
+    try {
+      setSession(newSession);
+      
+      if (newSession?.user) {
+        // 1. Cache session
         localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(newSession));
+        
+        // 2. Load profile (network + cache fallback)
         const profile = await loadUserProfile(newSession.user.id);
-        if (profile) {
-          localStorage.setItem(STORAGE_KEYS.PROFILE(newSession.user.id), JSON.stringify(profile));
-          setUser(profile);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error updating auth state:', error);
+        setUser(profile);
+      } else {
+        // 3. Clear auth state
+        localStorage.removeItem(STORAGE_KEYS.SESSION);
+        if (user) localStorage.removeItem(STORAGE_KEYS.PROFILE(user.id));
         setUser(null);
       }
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.SESSION);
-      if (user) {
-        localStorage.removeItem(STORAGE_KEYS.PROFILE(user.id));
-      }
-      setUser(null);
+    } catch (error) {
+      console.error('Auth state update error:', error);
+    } finally {
+      if (isMounted) setLoading(false);
     }
-    
-    setLoading(false);
-  }, [loadUserProfile, user]);
+  }, [isMounted, loadUserProfile, user]);
 
+  // Initialize auth state
   useEffect(() => {
-    let mounted = true;
+    setIsMounted(true);
 
     const initAuth = async () => {
       try {
-        console.log('Initializing authentication...');
-        
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session error:', error);
-          if (mounted) {
-            setLoading(false);
-          }
-          return;
+        // 1. Check for cached session
+        const cachedSession = localStorage.getItem(STORAGE_KEYS.SESSION);
+        if (cachedSession) {
+          updateAuthState(JSON.parse(cachedSession));
         }
 
-        if (mounted) {
-          await updateAuthState(data.session);
-        }
+        // 2. Validate with Supabase
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        await updateAuthState(session);
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        if (mounted) {
-          setUser(null);
-          setSession(null);
-          setLoading(false);
-        }
+        console.error('Auth init error:', error);
+        if (isMounted) setLoading(false);
       }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event);
-        if (mounted) {
-          await updateAuthState(session);
-        }
-      }
-    );
+    // 3. Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(updateAuthState);
 
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      setIsMounted(false);
+      subscription?.unsubscribe();
     };
-  }, [updateAuthState]);
+  }, [updateAuthState, isMounted]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  // Login with error boundary
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      console.log('Attempting login for:', email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Login failed:', error.message);
-        return false;
-      }
-
-      console.log('Login successful');
-      return !!data.user;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      return !error;
     } catch (error) {
       console.error('Login error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const register = async (userData: {
+  // Registration with profile creation
+  const register = useCallback(async (userData: {
     name: string;
     email: string;
     password: string;
     goal: 'weight_loss' | 'muscle_gain';
     subscription_plan: string;
-  }): Promise<boolean> => {
+  }) => {
     try {
-      console.log('Attempting registration for:', userData.email);
-
+      // 1. Create auth account
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -216,18 +193,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-      if (error) {
-        console.error('Registration failed:', error.message);
-        return false;
-      }
+      if (error || !data.user) return false;
 
-      if (!data.user) {
-        console.error('No user returned from registration');
-        return false;
-      }
-
-      console.log('User registered, creating profile...');
-
+      // 2. Create user profile
       const profileData = {
         id: data.user.id,
         name: userData.name,
@@ -240,40 +208,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { error: insertError } = await supabase
         .from('users')
-        .insert([profileData]);
+        .insert(profileData);
 
-      if (insertError) {
-        console.error('Profile creation failed:', insertError.message);
-        return false;
-      }
-
-      console.log('Registration completed successfully');
-      return true;
+      return !insertError;
     } catch (error) {
       console.error('Registration error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const logout = async (): Promise<void> => {
+  // Logout with cleanup
+  const logout = useCallback(async () => {
     try {
-      console.log('Logging out...');
-      
       await supabase.auth.signOut();
-      
       localStorage.removeItem(STORAGE_KEYS.SESSION);
-      if (user) {
-        localStorage.removeItem(STORAGE_KEYS.PROFILE(user.id));
-      }
-      
+      if (user) localStorage.removeItem(STORAGE_KEYS.PROFILE(user.id));
       setUser(null);
       setSession(null);
-      
-      console.log('Logout completed');
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
+  }, [user]);
 
   const contextValue: AuthContextType = {
     user,
