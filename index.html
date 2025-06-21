@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>attram-gym-web-pwa</title>
+    <title>attram-gym</title>
     <meta name="description" content="Your personal gym companion for tracking workouts and progress" />
     <meta name="author" content="Lovable" />
 
@@ -12,11 +12,20 @@
     <link rel="manifest" href="/manifest.json" />
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#10b981" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Attram Gym" />
-    
+    <!-- Replace deprecated tag -->
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Add this to prevent font warnings -->
+<style>
+  @font-face {
+    font-family: 'fallback-font';
+    src: local('Arial');
+    font-display: swap;
+  }
+  body {
+    font-family: 'fallback-font';
+  }
+</style>
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/placeholder.svg" />
     
