@@ -14,7 +14,7 @@ const Login = () => {
   const { user, login, register, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -41,7 +41,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Login attempt started');
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const success = await login(loginData.email, loginData.password);
@@ -67,7 +67,7 @@ const Login = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -92,7 +92,7 @@ const Login = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const success = await register({
@@ -130,7 +130,7 @@ const Login = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -138,8 +138,11 @@ const Login = () => {
   if (loading) {
     console.log('Showing loading spinner - auth context loading');
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -148,8 +151,11 @@ const Login = () => {
   if (user) {
     console.log('User exists, showing redirect loading');
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -192,7 +198,7 @@ const Login = () => {
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -204,11 +210,11 @@ const Login = () => {
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign in"}
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>
               </TabsContent>
@@ -224,7 +230,7 @@ const Login = () => {
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -236,7 +242,7 @@ const Login = () => {
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -246,7 +252,7 @@ const Login = () => {
                       className="w-full p-2 border border-gray-300 rounded-md disabled:opacity-50"
                       value={signupData.goal}
                       onChange={(e) => setSignupData({ ...signupData, goal: e.target.value as 'weight_loss' | 'muscle_gain' })}
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     >
                       <option value="weight_loss">Weight Loss</option>
                       <option value="muscle_gain">Muscle Gain</option>
@@ -261,7 +267,7 @@ const Login = () => {
                       value={signupData.password}
                       onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -273,11 +279,11 @@ const Login = () => {
                       value={signupData.confirmPassword}
                       onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                       required
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create account"}
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Creating account..." : "Create account"}
                   </Button>
                 </form>
               </TabsContent>

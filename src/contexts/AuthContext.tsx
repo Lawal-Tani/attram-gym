@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -47,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Fetch user profile from our users table
           try {
+            console.log('Fetching user profile for:', session.user.id);
             const { data: profile, error } = await supabase
               .from('users')
               .select('*')
@@ -65,27 +67,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               });
             } else {
               console.error('Error fetching user profile:', error);
+              // Don't set user to null here - the session exists but profile fetch failed
+              // This could be a temporary network issue
+              if (error?.code === 'PGRST116') {
+                console.log('User profile not found, user may need to complete signup');
+              }
               setUser(null);
             }
           } catch (error) {
-            console.error('Error in auth state change:', error);
+            console.error('Error in profile fetch:', error);
             setUser(null);
           }
         } else {
           console.log('No session, clearing user');
           setUser(null);
         }
+        
+        // Always set loading to false after processing auth state change
         setLoading(false);
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
-      if (!session) {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.email, error);
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setLoading(false);
+          return;
+        }
+        
+        // If no session, set loading to false immediately
+        if (!session) {
+          console.log('No initial session found');
+          setLoading(false);
+        }
+        // If session exists, the onAuthStateChange will handle it
+      } catch (error) {
+        console.error('Error in checkSession:', error);
         setLoading(false);
       }
-    });
+    };
+
+    checkSession();
 
     return () => {
       console.log('AuthContext: Cleaning up auth listener');
