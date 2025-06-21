@@ -178,8 +178,10 @@ export type Database = {
           id: string
           membership_expiry: string | null
           name: string
+          payment_method: string | null
           role: string
           start_date: string | null
+          subscription_plan: string | null
           updated_at: string
         }
         Insert: {
@@ -188,8 +190,10 @@ export type Database = {
           id: string
           membership_expiry?: string | null
           name: string
+          payment_method?: string | null
           role?: string
           start_date?: string | null
+          subscription_plan?: string | null
           updated_at?: string
         }
         Update: {
@@ -198,8 +202,10 @@ export type Database = {
           id?: string
           membership_expiry?: string | null
           name?: string
+          payment_method?: string | null
           role?: string
           start_date?: string | null
+          subscription_plan?: string | null
           updated_at?: string
         }
         Relationships: []

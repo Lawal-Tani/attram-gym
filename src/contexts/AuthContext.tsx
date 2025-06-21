@@ -95,8 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name: profile.name,
             goal: profile.goal as 'weight_loss' | 'muscle_gain',
             role: profile.role as 'user' | 'admin',
-            membership_expiry: profile.membership_expiry,
-            start_date: profile.start_date,
+            membership_expiry: profile.membership_expiry || '',
+            start_date: profile.start_date || '',
             subscription_plan: profile.subscription_plan || 'basic',
             payment_method: profile.payment_method || 'none'
           });
