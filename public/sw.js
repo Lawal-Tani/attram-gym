@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'attram-gym-v2';
 const urlsToCache = [
   '/',
@@ -24,44 +23,45 @@ self.addEventListener('install', (event) => {
         console.error('Failed to cache resources:', error);
       })
   );
-  // Force the waiting service worker to become the active service worker
   self.skipWaiting();
 });
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
+  const requestURL = new URL(event.request.url);
+
+  // Skip unsupported schemes like chrome-extension
+  if (requestURL.protocol.startsWith('chrome-extension')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
-        
-        // Clone the request
+
         const fetchRequest = event.request.clone();
-        
+
         return fetch(fetchRequest).then((response) => {
-          // Check if we received a valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-          
-          // Clone the response
+
           const responseToCache = response.clone();
-          
+
           caches.open(CACHE_NAME)
             .then((cache) => {
-              cache.put(event.request, responseToCache);
+              cache.put(event.request, responseToCache).catch((err) => {
+                console.warn('Failed to cache:', event.request.url, err);
+              });
             });
-          
+
           return response;
         });
       })
-      .catch(() => {
-        // If both cache and network fail, return offline page
-        return caches.match('/');
-      })
+      .catch(() => caches.match('/'))
   );
 });
 
@@ -80,6 +80,5 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Ensure the service worker takes control immediately
   self.clients.claim();
 });
