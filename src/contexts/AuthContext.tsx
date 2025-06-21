@@ -55,28 +55,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isFetching, setIsFetching] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
-    if (isFetching) return;
+    console.log('fetchUserProfile called for userId:', userId);
+    
+    if (isFetching) {
+      console.log('Already fetching, skipping...');
+      return;
+    }
+    
     setIsFetching(true);
 
     try {
-      const { data: profile, error } = await supabase
+      console.log('Starting Supabase query for user profile...');
+      
+      // Use a more explicit query structure
+      const query = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
+      
+      console.log('Query created, executing...');
+      const result = await query;
+      console.log('Query result:', result);
+      
+      const { data: profile, error } = result;
 
       if (error) {
-        console.error('Supabase error fetching profile:', error.message);
+        console.error('Supabase error fetching profile:', error);
         // Try to load from cache on error
         const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
         if (cached) {
           try {
-            setUser(JSON.parse(cached));
+            const cachedProfile = JSON.parse(cached);
+            console.log('Loaded profile from cache:', cachedProfile);
+            setUser(cachedProfile);
           } catch (parseError) {
             console.error('Error parsing cached profile:', parseError);
           }
         }
       } else if (profile) {
+        console.log('Profile fetched successfully:', profile);
         const typedProfile: UserProfile = {
           ...profile,
           goal: isValidGoal(profile.goal) ? profile.goal : 'weight_loss',
@@ -86,26 +104,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(typedProfile);
       }
     } catch (err) {
-      console.error('Unexpected error fetching user profile:', err);
+      console.error('Unexpected error in fetchUserProfile:', err);
       // Try to load from cache on unexpected error
       const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
       if (cached) {
         try {
-          setUser(JSON.parse(cached));
+          const cachedProfile = JSON.parse(cached);
+          console.log('Loaded profile from cache after error:', cachedProfile);
+          setUser(cachedProfile);
         } catch (parseError) {
-          console.error('Error parsing cached profile:', parseError);
+          console.error('Error parsing cached profile after error:', parseError);
         }
       }
     } finally {
       setIsFetching(false);
+      console.log('fetchUserProfile completed');
     }
   };
 
   const handleSessionChange = async (session: Session | null) => {
+    console.log('handleSessionChange called with session:', session?.user?.id);
+    
     setSession(session);
     if (session?.user) {
-      localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(session));
-      await fetchUserProfile(session.user.id);
+      try {
+        localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(session));
+        await fetchUserProfile(session.user.id);
+      } catch (err) {
+        console.error('Error in handleSessionChange:', err);
+      }
     } else {
       localStorage.removeItem(CACHE_KEYS.SESSION);
       setUser(null);
@@ -114,11 +141,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    console.log('AuthProvider useEffect initializing...');
+    
     const initializeAuth = async () => {
       setLoading(true);
       try {
-        // First try to get current session from Supabase
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Getting session from Supabase...');
+        
+        // Use a more explicit approach
+        const sessionQuery = supabase.auth.getSession();
+        const sessionResult = await sessionQuery;
+        console.log('Session result:', sessionResult);
+        
+        const { data, error } = sessionResult;
         
         if (error) {
           console.error('Error getting session:', error);
@@ -127,6 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (cachedSession) {
             try {
               const parsedSession = JSON.parse(cachedSession);
+              console.log('Using cached session:', parsedSession.user?.id);
               await handleSessionChange(parsedSession);
             } catch (parseError) {
               console.error('Error parsing cached session:', parseError);
@@ -137,7 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await handleSessionChange(null);
           }
         } else {
-          await handleSessionChange(session);
+          console.log('Got session from Supabase:', data.session?.user?.id);
+          await handleSessionChange(data.session);
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
@@ -149,17 +186,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
 
+    console.log('Setting up auth state change listener...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
-        await handleSessionChange(session);
+        try {
+          await handleSessionChange(session);
+        } catch (err) {
+          console.error('Error in auth state change handler:', err);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription...');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
+    console.log('Login attempt for:', email);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
@@ -171,6 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
+      console.log('Login successful:', data.user?.id);
       return !!data.user;
     } catch (err) {
       console.error('Login error:', err);
@@ -185,6 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     goal: 'weight_loss' | 'muscle_gain';
     subscription_plan: string;
   }) => {
+    console.log('Registration attempt for:', userData.email);
     try {
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
@@ -204,6 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data?.user) {
+        console.log('User created, inserting profile...');
         // Insert new profile row into users table
         const { error: insertError } = await supabase
           .from('users')
@@ -222,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return false;
         }
 
+        console.log('Registration successful');
         return true;
       }
 
@@ -233,12 +283,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    console.log('Logout initiated');
     try {
       await supabase.auth.signOut();
       localStorage.removeItem(CACHE_KEYS.SESSION);
       if (user) localStorage.removeItem(CACHE_KEYS.PROFILE(user.id));
       setUser(null);
       setSession(null);
+      console.log('Logout successful');
     } catch (err) {
       console.error('Logout error:', err);
     }
