@@ -1,80 +1,117 @@
-const CACHE_NAME = 'attram-gym-v2';
-const urlsToCache = [
+const CACHE_NAME = 'attram-gym-v3'; // Updated version
+const OFFLINE_PAGE = '/offline.html';
+const PRECACHE_URLS = [
   '/',
   '/manifest.json',
   '/photo_2025-06-19_01-30-39.jpg',
   '/photo_2025-06-19_01-30-42.jpg'
 ];
 
-// Install event
+// Never cache these paths
+const NO_CACHE_PATHS = [
+  /^\/auth\//,               // Supabase auth endpoints
+  /^\/api\//,               // API routes
+  /\.(json|js|css)\?v=\d+$/, // Versioned files
+  /chrome-extension:\/\//    // Chrome extensions
+];
+
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+      .then(cache => {
+        console.log('Caching core assets');
+        return cache.addAll(PRECACHE_URLS);
       })
-      .catch((error) => {
-        console.error('Failed to cache resources:', error);
+      .then(() => {
+        console.log('Skipping waiting');
+        return self.skipWaiting();
+      })
+      .catch(err => {
+        console.error('Install failed:', err);
+        throw err;
       })
   );
-  self.skipWaiting();
 });
 
-// Fetch event
 self.addEventListener('fetch', (event) => {
-  const requestURL = new URL(event.request.url);
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Skip unsupported schemes like chrome-extension
-  if (requestURL.protocol.startsWith('chrome-extension')) {
-    return;
+  // Skip non-GET requests and unsupported schemes
+  if (request.method !== 'GET' || 
+      NO_CACHE_PATHS.some(regex => regex.test(url.href))) {
+    return event.respondWith(fetch(request));
   }
 
+  // Network-first strategy with offline fallback
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
+    (async () => {
+      try {
+        // Try network first
+        const networkResponse = await fetch(request);
+        
+        // Cache successful responses
+        if (networkResponse.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, networkResponse.clone());
         }
-
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache).catch((err) => {
-                console.warn('Failed to cache:', event.request.url, err);
-              });
-            });
-
-          return response;
-        });
-      })
-      .catch(() => caches.match('/'))
+        return networkResponse;
+      } catch (error) {
+        // Fallback to cache
+        const cachedResponse = await caches.match(request);
+        return cachedResponse || caches.match(OFFLINE_PAGE);
+      }
+    })()
   );
 });
 
-// Activate event
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
+    (async () => {
+      // Enable navigation preload if available
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable();
+      }
+
+      // Clean old caches
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+
+      // Take control immediately
+      await self.clients.claim();
+      console.log('Service Worker activated');
+    })()
+  );
+});
+
+// Background sync for failed requests
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'retry-failed') {
+    event.waitUntil(retryFailedRequests());
+  }
+});
+
+async function retryFailedRequests() {
+  const cache = await caches.open(CACHE_NAME);
+  const requests = await cache.keys();
+  
+  await Promise.all(
+    requests.map(async request => {
+      try {
+        const response = await fetch(request);
+        if (response.ok) {
+          await cache.put(request, response.clone());
+        }
+      } catch (err) {
+        console.warn('Retry failed for:', request.url);
+      }
     })
   );
-  self.clients.claim();
-});
+}
