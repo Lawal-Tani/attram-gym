@@ -1,10 +1,6 @@
 const CACHE_NAME = 'attram-gym-v2';
 const urlsToCache = [
   '/',
-  '/dashboard',
-  '/workout-plan',
-  '/progress',
-  '/profile',
   '/manifest.json',
   '/photo_2025-06-19_01-30-39.jpg',
   '/photo_2025-06-19_01-30-42.jpg'
