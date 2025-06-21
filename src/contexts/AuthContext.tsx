@@ -24,6 +24,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// NEW: Cache keys for PWA
+const CACHE_KEYS = {
+  SESSION: 'pwa_session',
+  PROFILE: (uid: string) => `pwa_profile_${uid}`
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -36,114 +42,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false); // NEW: Fetch lock
 
+  // NEW: Enhanced fetch with offline support
   const fetchUserProfile = async (userId: string) => {
+    if (isFetching) return;
+    setIsFetching(true);
+
     try {
-      console.log('Fetching user profile for:', userId);
+      // 1. Try network fetch
       const { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single();
-      
+        .single()
+        .catch(() => ({ data: null, error: true }));
+
+      // 2. Update cache if successful
       if (profile && !error) {
-        console.log('User profile loaded:', profile);
-        setUser({
-          id: profile.id,
-          name: profile.name,
-          goal: profile.goal,
-          role: profile.role,
-          membership_expiry: profile.membership_expiry || '',
-          start_date: profile.start_date || '',
-          subscription_plan: profile.subscription_plan || 'basic',
-          payment_method: profile.payment_method || 'none'
-        });
+        localStorage.setItem(CACHE_KEYS.PROFILE(userId), JSON.stringify(profile));
+        setUser(profile);
       } else {
-        console.error('Error fetching user profile:', error);
-        setUser(null);
+        // 3. Fallback to cached profile
+        const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
+        if (cached) setUser(JSON.parse(cached));
       }
-    } catch (err) {
-      console.error('Error in profile fetch:', err);
-      setUser(null);
+    } finally {
+      setIsFetching(false);
     }
   };
 
+  // NEW: Unified session handler
+  const handleSessionChange = async (session: Session | null) => {
+    setSession(session);
+    if (session?.user) {
+      localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(session));
+      await fetchUserProfile(session.user.id);
+    } else {
+      localStorage.removeItem(CACHE_KEYS.SESSION);
+      setUser(null);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    console.log('AuthContext: Setting up auth state listener');
-
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting initial session:', error);
-        } else {
-          console.log('Initial session:', session?.user?.email || 'No session');
-          setSession(session);
-
-          if (session?.user) {
-            await fetchUserProfile(session.user.id);
-          } else {
-            setUser(null);
-          }
-        }
-      } catch (err) {
-        console.error('Error in getInitialSession:', err);
-      } finally {
-        setLoading(false);
+    // NEW: Offline-first initialization
+    const initializeAuth = async () => {
+      // 1. Load cached session
+      const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
+      if (cachedSession) {
+        handleSessionChange(JSON.parse(cachedSession));
       }
+
+      // 2. Validate with Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      handleSessionChange(session);
     };
 
+    initializeAuth();
+
+    // 3. Subscribe to real-time changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email || 'No session');
-        setSession(session);
-
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
-        } else {
-          console.log('No session, clearing user');
-          setUser(null);
-        }
-
-        // ✅ Always stop loading after session is handled
-        console.log('Auth state change - setting loading to false');
-        setLoading(false);
+      async (_, session) => {
+        handleSessionChange(session);
       }
     );
 
-    getInitialSession();
-
-    return () => {
-      console.log('AuthContext: Cleaning up auth listener');
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  // NEW: Resilient login with cache update
+  const login = async (email: string, password: string) => {
     try {
-      console.log('Login attempt for:', email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        console.error('Login error:', error);
-        return false;
-      }
-      console.log('Login successful');
-      return true;
+      return !error;
     } catch (err) {
       console.error('Login error:', err);
       return false;
     }
   };
 
+  // NEW: Registration with immediate cache
   const register = async (userData: {
     name: string;
     email: string;
     password: string;
     goal: 'weight_loss' | 'muscle_gain';
     subscription_plan: string;
-  }): Promise<boolean> => {
+  }) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
@@ -155,20 +143,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-      if (error) {
-        console.error('Registration error:', error);
-        return false;
+      if (data?.user) {
+        localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(data.session));
       }
-
-      return true;
+      return !error;
     } catch (err) {
       console.error('Registration error:', err);
       return false;
     }
   };
 
+  // NEW: Cache cleanup on logout
   const logout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem(CACHE_KEYS.SESSION);
+    if (user) localStorage.removeItem(CACHE_KEYS.PROFILE(user.id));
   };
 
   return (
