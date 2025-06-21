@@ -18,7 +18,13 @@ interface AuthContextType {
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: { name: string; email: string; password: string; goal: 'weight_loss' | 'muscle_gain'; subscription_plan: string }) => Promise<boolean>;
+  register: (userData: {
+    name: string;
+    email: string;
+    password: string;
+    goal: 'weight_loss' | 'muscle_gain';
+    subscription_plan: string;
+  }) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -43,7 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
-  // ✅ FIXED: fetchUserProfile with proper try/catch
   const fetchUserProfile = async (userId: string) => {
     if (isFetching) return;
     setIsFetching(true);
@@ -86,20 +91,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
-      if (cachedSession) {
-        handleSessionChange(JSON.parse(cachedSession));
+      setLoading(true);
+      try {
+        const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
+        if (cachedSession) {
+          await handleSessionChange(JSON.parse(cachedSession));
+        } else {
+          const { data: { session } } = await supabase.auth.getSession();
+          await handleSessionChange(session);
+        }
+      } catch (err) {
+        console.error('Error initializing auth:', err);
+        setUser(null);
+        setSession(null);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      handleSessionChange(session);
     };
 
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_, session) => {
-        handleSessionChange(session);
+        await handleSessionChange(session);
       }
     );
 
@@ -131,15 +145,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: userData.name,
             goal: userData.goal,
-            subscription_plan: userData.subscription_plan
+            subscription_plan: userData.subscription_plan,
           }
         }
       });
 
-      if (data?.user) {
-        localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(data.session));
+      if (error) {
+        console.error('Sign up error:', error.message);
+        return false;
       }
-      return !error;
+
+      if (data?.user) {
+        // Insert new profile row into users table
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: data.user.id,
+            name: userData.name,
+            goal: userData.goal,
+            role: 'user',
+            start_date: new Date().toISOString(),
+            membership_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            subscription_plan: userData.subscription_plan,
+          }]);
+
+        if (insertError) {
+          console.error('Insert profile error:', insertError.message);
+          return false;
+        }
+
+        localStorage.setItem(CACHE_KEYS.SESSION, JSON.stringify(data.session));
+        setSession(data.session || null);
+        await fetchUserProfile(data.user.id);
+
+        return true;
+      }
+
+      return false;
     } catch (err) {
       console.error('Registration error:', err);
       return false;
@@ -150,6 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     localStorage.removeItem(CACHE_KEYS.SESSION);
     if (user) localStorage.removeItem(CACHE_KEYS.PROFILE(user.id));
+    setUser(null);
+    setSession(null);
   };
 
   return (
