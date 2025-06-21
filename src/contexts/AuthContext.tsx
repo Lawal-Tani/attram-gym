@@ -24,7 +24,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// NEW: Cache keys for PWA
 const CACHE_KEYS = {
   SESSION: 'pwa_session',
   PROFILE: (uid: string) => `pwa_profile_${uid}`
@@ -42,37 +41,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isFetching, setIsFetching] = useState(false); // NEW: Fetch lock
+  const [isFetching, setIsFetching] = useState(false);
 
-  // NEW: Enhanced fetch with offline support
+  // ✅ FIXED: fetchUserProfile with proper try/catch
   const fetchUserProfile = async (userId: string) => {
     if (isFetching) return;
     setIsFetching(true);
 
     try {
-      // 1. Try network fetch
       const { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
-        .catch(() => ({ data: null, error: true }));
+        .single();
 
-      // 2. Update cache if successful
-      if (profile && !error) {
-        localStorage.setItem(CACHE_KEYS.PROFILE(userId), JSON.stringify(profile));
-        setUser(profile);
-      } else {
-        // 3. Fallback to cached profile
+      if (error) {
+        console.error('Supabase error fetching profile:', error.message);
         const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
         if (cached) setUser(JSON.parse(cached));
+      } else if (profile) {
+        localStorage.setItem(CACHE_KEYS.PROFILE(userId), JSON.stringify(profile));
+        setUser(profile);
       }
+    } catch (err) {
+      console.error('Unexpected error fetching user profile:', err);
+      const cached = localStorage.getItem(CACHE_KEYS.PROFILE(userId));
+      if (cached) setUser(JSON.parse(cached));
     } finally {
       setIsFetching(false);
     }
   };
 
-  // NEW: Unified session handler
   const handleSessionChange = async (session: Session | null) => {
     setSession(session);
     if (session?.user) {
@@ -86,22 +85,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // NEW: Offline-first initialization
     const initializeAuth = async () => {
-      // 1. Load cached session
       const cachedSession = localStorage.getItem(CACHE_KEYS.SESSION);
       if (cachedSession) {
         handleSessionChange(JSON.parse(cachedSession));
       }
 
-      // 2. Validate with Supabase
       const { data: { session } } = await supabase.auth.getSession();
       handleSessionChange(session);
     };
 
     initializeAuth();
 
-    // 3. Subscribe to real-time changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_, session) => {
         handleSessionChange(session);
@@ -111,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  // NEW: Resilient login with cache update
   const login = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -122,7 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // NEW: Registration with immediate cache
   const register = async (userData: {
     name: string;
     email: string;
@@ -153,7 +146,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // NEW: Cache cleanup on logout
   const logout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem(CACHE_KEYS.SESSION);
