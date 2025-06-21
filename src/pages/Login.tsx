@@ -18,9 +18,10 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log('Login useEffect - user:', user, 'loading:', loading);
     if (user && !loading) {
       console.log('User logged in, redirecting to dashboard:', user);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate]);
 
@@ -39,16 +40,18 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login attempt started');
     setIsLoading(true);
 
     try {
       const success = await login(loginData.email, loginData.password);
+      console.log('Login result:', success);
       if (success) {
         toast({
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
-        // Navigation will happen automatically via useEffect
+        // Don't navigate here, let useEffect handle it
       } else {
         toast({
           title: "Login failed",
@@ -133,6 +136,7 @@ const Login = () => {
 
   // Show loading spinner only when AuthContext is loading (initial auth check)
   if (loading) {
+    console.log('Showing loading spinner - auth context loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
@@ -142,12 +146,15 @@ const Login = () => {
 
   // Don't show login form if user is already authenticated
   if (user) {
+    console.log('User exists, showing redirect loading');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
+
+  console.log('Rendering login form');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">

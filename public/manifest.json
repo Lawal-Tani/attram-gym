@@ -12,16 +12,28 @@
   "categories": ["health", "fitness", "lifestyle"],
   "icons": [
     {
-      "src": "/photo_2025-06-19_01-30-42",
+      "src": "/photo_2025-06-19_01-30-42.jpg",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
-      "src": "/photo_2025-06-19_01-30-39",
+      "src": "/photo_2025-06-19_01-30-42.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/photo_2025-06-19_01-30-39.jpg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/photo_2025-06-19_01-30-39.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
     }
   ]
 }

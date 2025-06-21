@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -37,50 +36,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthContext: Setting up auth state listener');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
           // Fetch user profile from our users table
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (!error && profile) {
-            // Ensure the profile matches our UserProfile interface
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              goal: profile.goal as 'weight_loss' | 'muscle_gain',
-              role: profile.role as 'user' | 'admin',
-              membership_expiry: profile.membership_expiry,
-              start_date: profile.start_date
-            });
-          }
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        // Fetch user profile
-        supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile, error }) => {
+          try {
+            const { data: profile, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
             if (!error && profile) {
+              console.log('User profile loaded:', profile);
               setUser({
                 id: profile.id,
                 name: profile.name,
@@ -89,19 +63,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 membership_expiry: profile.membership_expiry,
                 start_date: profile.start_date
               });
+            } else {
+              console.error('Error fetching user profile:', error);
+              setUser(null);
             }
-            setLoading(false);
-          });
-      } else {
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+            setUser(null);
+          }
+        } else {
+          console.log('No session, clearing user');
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
+      if (!session) {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthContext: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('Login attempt for:', email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -112,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
+      console.log('Login successful');
       return true;
     } catch (error) {
       console.error('Login error:', error);
