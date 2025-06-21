@@ -38,6 +38,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log('Fetching user profile for:', userId);
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (!error && profile) {
+        console.log('User profile loaded:', profile);
+        setUser({
+          id: profile.id,
+          name: profile.name,
+          goal: profile.goal as 'weight_loss' | 'muscle_gain',
+          role: profile.role as 'user' | 'admin',
+          membership_expiry: profile.membership_expiry || '',
+          start_date: profile.start_date || '',
+          subscription_plan: profile.subscription_plan || 'basic',
+          payment_method: profile.payment_method || 'none'
+        });
+      } else {
+        console.error('Error fetching user profile:', error);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error in profile fetch:', error);
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
     
@@ -48,16 +79,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.error('Error getting initial session:', error);
         } else {
-          console.log('Initial session:', session?.user?.email);
+          console.log('Initial session:', session?.user?.email || 'No session');
           setSession(session);
           
           if (session?.user) {
             await fetchUserProfile(session.user.id);
+          } else {
+            setUser(null);
           }
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
@@ -65,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('Auth state changed:', event, session?.user?.email || 'No session');
         setSession(session);
         
         if (session?.user) {
@@ -75,40 +109,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
         
-        setLoading(false);
+        if (!loading) {
+          console.log('Auth state change - setting loading to false');
+          setLoading(false);
+        }
       }
     );
-
-    const fetchUserProfile = async (userId: string) => {
-      try {
-        console.log('Fetching user profile for:', userId);
-        const { data: profile, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        
-        if (!error && profile) {
-          console.log('User profile loaded:', profile);
-          setUser({
-            id: profile.id,
-            name: profile.name,
-            goal: profile.goal as 'weight_loss' | 'muscle_gain',
-            role: profile.role as 'user' | 'admin',
-            membership_expiry: profile.membership_expiry || '',
-            start_date: profile.start_date || '',
-            subscription_plan: profile.subscription_plan || 'basic',
-            payment_method: profile.payment_method || 'none'
-          });
-        } else {
-          console.error('Error fetching user profile:', error);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error in profile fetch:', error);
-        setUser(null);
-      }
-    };
 
     getInitialSession();
 
