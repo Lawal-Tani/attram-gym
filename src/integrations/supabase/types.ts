@@ -174,6 +174,7 @@ export type Database = {
       users: {
         Row: {
           created_at: string
+          fitness_level: string | null
           goal: string
           id: string
           membership_expiry: string | null
@@ -186,6 +187,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fitness_level?: string | null
           goal: string
           id: string
           membership_expiry?: string | null
@@ -198,6 +200,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fitness_level?: string | null
           goal?: string
           id?: string
           membership_expiry?: string | null
@@ -259,6 +262,7 @@ export type Database = {
         Row: {
           created_at: string
           day_of_week: string
+          fitness_level: string | null
           goal_type: string
           id: string
           title: string
@@ -267,6 +271,7 @@ export type Database = {
         Insert: {
           created_at?: string
           day_of_week: string
+          fitness_level?: string | null
           goal_type: string
           id?: string
           title: string
@@ -275,6 +280,7 @@ export type Database = {
         Update: {
           created_at?: string
           day_of_week?: string
+          fitness_level?: string | null
           goal_type?: string
           id?: string
           title?: string

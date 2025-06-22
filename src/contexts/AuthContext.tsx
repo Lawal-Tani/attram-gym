@@ -12,6 +12,7 @@ interface UserProfile {
   start_date: string;
   subscription_plan?: string;
   payment_method?: string;
+  fitness_level: 'beginner' | 'intermediate' | 'advanced';
 }
 
 interface AuthContextType {
@@ -25,6 +26,7 @@ interface AuthContextType {
     password: string;
     goal: 'weight_loss' | 'muscle_gain';
     subscription_plan: string;
+    fitness_level: 'beginner' | 'intermediate' | 'advanced';
   }) => Promise<boolean>;
   loading: boolean;
   authChecked: boolean;
@@ -73,7 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           membership_expiry: profile.membership_expiry || new Date().toISOString(),
           start_date: profile.start_date || new Date().toISOString(),
           subscription_plan: profile.subscription_plan || 'basic',
-          payment_method: profile.payment_method || 'none'
+          payment_method: profile.payment_method || 'none',
+          fitness_level: profile.fitness_level || 'beginner'
         };
         console.log('User profile fetched successfully:', validatedProfile);
         return validatedProfile;
@@ -191,6 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string;
     goal: 'weight_loss' | 'muscle_gain';
     subscription_plan: string;
+    fitness_level: 'beginner' | 'intermediate' | 'advanced';
   }): Promise<boolean> => {
     try {
       setLoading(true);
@@ -205,7 +209,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: userData.name,
             goal: userData.goal,
-            subscription_plan: userData.subscription_plan
+            subscription_plan: userData.subscription_plan,
+            fitness_level: userData.fitness_level
           }
         }
       });
@@ -223,7 +228,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: 'user',
           start_date: new Date().toISOString(),
           membership_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          subscription_plan: userData.subscription_plan
+          subscription_plan: userData.subscription_plan,
+          fitness_level: userData.fitness_level
         }]);
 
       if (profileError) throw profileError;

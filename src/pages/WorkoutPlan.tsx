@@ -9,6 +9,8 @@ import WorkoutCard from '@/components/workout/WorkoutCard';
 import WorkoutTips from '@/components/workout/WorkoutTips';
 import LoadingSpinner from '@/components/workout/LoadingSpinner';
 import ErrorDisplay from '@/components/workout/ErrorDisplay';
+import { Badge } from '@/components/ui/badge';
+import { Target } from 'lucide-react';
 
 const WorkoutPlan = () => {
   const { user } = useAuth();
@@ -83,6 +85,19 @@ const WorkoutPlan = () => {
     return days[new Date().getDay()];
   };
 
+  const getFitnessLevelColor = (level: string) => {
+    switch (level) {
+      case 'beginner':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'advanced':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -102,9 +117,21 @@ const WorkoutPlan = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Your Workout Plan
           </h1>
-          <p className="text-gray-600">
-            Personalized for {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'} • Today is {currentDay}
-          </p>
+          <div className="flex items-center gap-4 text-gray-600">
+            <span>Today is {currentDay}</span>
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant="outline" 
+                className={`capitalize ${getFitnessLevelColor(user?.fitness_level || 'beginner')}`}
+              >
+                <Target className="h-3 w-3 mr-1" />
+                {user?.fitness_level || 'beginner'} level
+              </Badge>
+              <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
+                {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6">
