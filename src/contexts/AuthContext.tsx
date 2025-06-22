@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
@@ -26,15 +27,11 @@ interface AuthContextType {
     subscription_plan: string;
   }) => Promise<boolean>;
   loading: boolean;
+  authChecked: boolean;
   error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const STORAGE_KEYS = {
-  SESSION: 'gym_session_v3',
-  PROFILE: (uid: string) => `gym_profile_v3_${uid}`
-};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -47,95 +44,125 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const safeUpdateAuthState = useCallback(async (newSession: Session | null) => {
+  console.log('AuthProvider render - authChecked:', authChecked, 'loading:', loading, 'user:', !!user);
+
+  const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
-      setSession(newSession);
-      
-      if (newSession?.user) {
-        // Fetch user profile with proper error handling
-        const { data: profile, error: fetchError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', newSession.user.id)
-          .single();
+      console.log('Fetching user profile for:', userId);
+      const { data: profile, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-        if (fetchError) throw fetchError;
-
-        if (profile) {
-          const validatedProfile: UserProfile = {
-            id: profile.id,
-            name: profile.name || 'Anonymous',
-            goal: profile.goal === 'muscle_gain' ? 'muscle_gain' : 'weight_loss',
-            role: profile.role === 'admin' ? 'admin' : 'user',
-            membership_expiry: profile.membership_expiry || new Date().toISOString(),
-            start_date: profile.start_date || new Date().toISOString(),
-            subscription_plan: profile.subscription_plan,
-            payment_method: profile.payment_method
-          };
-          setUser(validatedProfile);
-          localStorage.setItem(STORAGE_KEYS.PROFILE(newSession.user.id), JSON.stringify(validatedProfile));
-        }
-      } else {
-        if (user) {
-          localStorage.removeItem(STORAGE_KEYS.PROFILE(user.id));
-        }
-        setUser(null);
+      if (fetchError) {
+        console.error('Error fetching user profile:', fetchError);
+        return null;
       }
+
+      if (profile) {
+        const validatedProfile: UserProfile = {
+          id: profile.id,
+          name: profile.name || 'Anonymous',
+          goal: profile.goal === 'muscle_gain' ? 'muscle_gain' : 'weight_loss',
+          role: profile.role === 'admin' ? 'admin' : 'user',
+          membership_expiry: profile.membership_expiry || new Date().toISOString(),
+          start_date: profile.start_date || new Date().toISOString(),
+          subscription_plan: profile.subscription_plan || 'basic',
+          payment_method: profile.payment_method || 'none'
+        };
+        console.log('User profile fetched successfully:', validatedProfile);
+        return validatedProfile;
+      }
+      return null;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update auth state');
-      console.error('Auth state update error:', err);
-    } finally {
-      setLoading(false);
+      console.error('Error in fetchUserProfile:', err);
+      return null;
     }
-  }, [user]);
+  }, []);
+
+  const updateAuthState = useCallback(async (newSession: Session | null) => {
+    console.log('Updating auth state with session:', !!newSession);
+    setSession(newSession);
+    
+    if (newSession?.user) {
+      const profile = await fetchUserProfile(newSession.user.id);
+      setUser(profile);
+    } else {
+      setUser(null);
+    }
+    
+    setAuthChecked(true);
+    console.log('Auth state updated - user:', !!newSession?.user);
+  }, [fetchUserProfile]);
 
   useEffect(() => {
+    console.log('AuthProvider useEffect starting');
     let isMounted = true;
 
     const initializeAuth = async () => {
       try {
         setLoading(true);
-        
-        // Check for existing session
+        setError(null);
+
+        // Get initial session
+        console.log('Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) throw sessionError;
-        if (!isMounted) return;
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
 
-        await safeUpdateAuthState(session);
-        
+        if (isMounted) {
+          console.log('Initial session retrieved:', !!session);
+          await updateAuthState(session);
+        }
+
         // Set up auth state listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+        console.log('Setting up auth state listener...');
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state change event:', event, 'session:', !!session);
           if (isMounted) {
-            await safeUpdateAuthState(session);
+            await updateAuthState(session);
           }
         });
 
         return () => {
+          console.log('Cleaning up auth subscription');
           subscription?.unsubscribe();
         };
       } catch (err) {
+        console.error('Auth initialization error:', err);
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Initialization failed');
+          setError(err instanceof Error ? err.message : 'Auth initialization failed');
+          setAuthChecked(true);
+        }
+      } finally {
+        if (isMounted) {
           setLoading(false);
         }
       }
     };
 
-    initializeAuth();
+    const cleanup = initializeAuth();
 
     return () => {
+      console.log('AuthProvider cleanup');
       isMounted = false;
+      cleanup.then(cleanupFn => cleanupFn && cleanupFn());
     };
-  }, [safeUpdateAuthState]);
+  }, []); // Removed updateAuthState from dependencies to break circular dependency
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Attempting login for:', email);
       
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -143,11 +170,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (authError) {
+        console.error('Login error:', authError);
         throw authError;
       }
 
+      console.log('Login successful');
       return true;
     } catch (err) {
+      console.error('Login failed:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
       return false;
     } finally {
@@ -165,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
+      console.log('Attempting registration for:', userData.email);
 
       // Create auth user
       const { data: { user }, error: authError } = await supabase.auth.signUp({
@@ -197,8 +228,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) throw profileError;
 
+      console.log('Registration successful');
       return true;
     } catch (err) {
+      console.error('Registration failed:', err);
       setError(err instanceof Error ? err.message : 'Registration failed');
       return false;
     } finally {
@@ -210,13 +243,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
+      console.log('Attempting logout');
       
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
       setUser(null);
       setSession(null);
+      console.log('Logout successful');
     } catch (err) {
+      console.error('Logout failed:', err);
       setError(err instanceof Error ? err.message : 'Logout failed');
     } finally {
       setLoading(false);
@@ -230,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     register,
     loading,
+    authChecked,
     error
   };
 

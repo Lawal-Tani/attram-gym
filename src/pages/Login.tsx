@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,20 +11,31 @@ import { useToast } from '@/hooks/use-toast';
 import { Dumbbell, Crown, Star, Zap } from 'lucide-react';
 
 const Login = () => {
-  const { user, login, register, loading, authChecked } = useAuth();
+  const { user, login, register, loading, authChecked, error } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Enhanced redirect logic
+  console.log('Login page render - authChecked:', authChecked, 'user:', !!user, 'loading:', loading);
+
+  // Redirect authenticated users
   useEffect(() => {
     if (authChecked && user && !loading) {
-      const timer = setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1000); // 1s delay to ensure everything is loaded
-      return () => clearTimeout(timer);
+      console.log('Redirecting authenticated user to dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate, authChecked]);
+
+  // Show auth error if any
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -68,6 +80,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Submitting login form');
       const success = await login(loginData.email, loginData.password);
       if (!success) {
         toast({
@@ -77,6 +90,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Login form error:', error);
       toast({
         title: "Login error",
         description: "An unexpected error occurred. Please try again.",
@@ -111,6 +125,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Submitting signup form');
       const success = await register({
         name: signupData.name,
         email: signupData.email,
@@ -134,6 +149,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Signup form error:', error);
       toast({
         title: "Signup error",
         description: "An unexpected error occurred. Please try again.",
@@ -145,17 +161,32 @@ const Login = () => {
   };
 
   // Show loading spinner while auth is initializing
-  if (!authChecked || loading) {
+  if (!authChecked) {
+    console.log('Showing auth loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Initializing authentication...</p>
         </div>
       </div>
     );
   }
 
+  // If user is authenticated, show a brief message before redirect
+  if (user) {
+    console.log('User authenticated, showing redirect message');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Welcome back! Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('Rendering login form');
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
@@ -192,7 +223,7 @@ const Login = () => {
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -204,10 +235,10 @@ const Login = () => {
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || loading}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
                     {isSubmitting ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>
@@ -215,7 +246,117 @@ const Login = () => {
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-6">
-                  {/* [Keep all your existing signup form JSX unchanged] */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        placeholder="Enter your full name"
+                        value={signupData.name}
+                        onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                        required
+                        disabled={isSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={signupData.email}
+                        onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                        required
+                        disabled={isSubmitting || loading}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Create a password"
+                        value={signupData.password}
+                        onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                        required
+                        disabled={isSubmitting || loading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={signupData.confirmPassword}
+                        onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                        required
+                        disabled={isSubmitting || loading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Fitness Goal</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={signupData.goal === 'weight_loss' ? 'default' : 'outline'}
+                        onClick={() => setSignupData({ ...signupData, goal: 'weight_loss' })}
+                        disabled={isSubmitting || loading}
+                        className="w-full"
+                      >
+                        Weight Loss
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={signupData.goal === 'muscle_gain' ? 'default' : 'outline'}
+                        onClick={() => setSignupData({ ...signupData, goal: 'muscle_gain' })}
+                        disabled={isSubmitting || loading}
+                        className="w-full"
+                      >
+                        Muscle Gain
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label>Choose Your Plan</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {subscriptionPlans.map((plan) => {
+                        const IconComponent = plan.icon;
+                        return (
+                          <div
+                            key={plan.id}
+                            className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                              signupData.subscription_plan === plan.id
+                                ? 'border-emerald-500 bg-emerald-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSignupData({ ...signupData, subscription_plan: plan.id })}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <IconComponent className="h-5 w-5" />
+                              <span className="font-semibold">{plan.name}</span>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-2">{plan.price}</div>
+                            <ul className="text-xs space-y-1">
+                              {plan.features.map((feature, index) => (
+                                <li key={index}>• {feature}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
+                  </Button>
                 </form>
               </TabsContent>
             </Tabs>
