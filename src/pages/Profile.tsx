@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,13 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { User, Target, Calendar, Clock, Edit2, Save, X, Crown } from 'lucide-react';
+import { User, Target, Calendar, Clock, Edit2, Save, X, Crown, LogOut } from 'lucide-react';
 import NavigationBar from '@/components/NavigationBar';
 import PaymentMethods from '@/components/PaymentMethods';
 import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
-  const { user, session } = useAuth();
+  const { user, session, logout } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -22,7 +21,6 @@ const Profile = () => {
   });
 
   const handleSave = () => {
-    // In a real app, this would update the user in the database
     toast({
       title: "Profile Updated",
       description: "Your profile has been updated successfully.",
@@ -52,7 +50,7 @@ const Profile = () => {
     const plan = user?.subscription_plan || 'basic';
     const planNames = {
       basic: 'Basic Plan',
-      premium: 'Premium Plan', 
+      premium: 'Premium Plan',
       pro: 'Pro Plan'
     };
     return planNames[plan as keyof typeof planNames] || 'Basic Plan';
@@ -64,7 +62,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       <NavigationBar />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -88,8 +86,8 @@ const Profile = () => {
                       Personal Information
                     </CardTitle>
                     {!isEditing ? (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setIsEditing(true)}
                       >
@@ -98,7 +96,7 @@ const Profile = () => {
                       </Button>
                     ) : (
                       <div className="flex gap-2">
-                        <Button 
+                        <Button
                           size="sm"
                           onClick={handleSave}
                           className="bg-emerald-500 hover:bg-emerald-600"
@@ -106,8 +104,8 @@ const Profile = () => {
                           <Save className="h-4 w-4 mr-2" />
                           Save
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => setIsEditing(false)}
                         >
@@ -141,7 +139,7 @@ const Profile = () => {
                         <div>
                           <Label className="text-sm font-medium text-gray-600">Account Type</Label>
                           <div className="mt-1">
-                            <Badge 
+                            <Badge
                               variant={user?.role === 'admin' ? 'default' : 'secondary'}
                               className="text-sm capitalize"
                             >
@@ -164,9 +162,9 @@ const Profile = () => {
                       </div>
                       <div>
                         <Label htmlFor="goal">Fitness Goal</Label>
-                        <Select 
-                          value={editData.goal} 
-                          onValueChange={(value: 'weight_loss' | 'muscle_gain') => 
+                        <Select
+                          value={editData.goal}
+                          onValueChange={(value: 'weight_loss' | 'muscle_gain') =>
                             setEditData({ ...editData, goal: value })
                           }
                         >
@@ -222,7 +220,7 @@ const Profile = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              {/* Membership Information */}
+              {/* Membership Info */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -245,7 +243,7 @@ const Profile = () => {
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Days Until Expiry</Label>
                       <div className="mt-1">
-                        <Badge 
+                        <Badge
                           variant={daysUntilExpiry <= 30 ? "destructive" : "secondary"}
                           className="text-sm"
                         >
@@ -264,8 +262,8 @@ const Profile = () => {
                       <p className="text-red-600 text-sm mb-3">
                         Your membership expires in {daysUntilExpiry} days. Please renew to continue accessing all features.
                       </p>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="border-red-300 text-red-700 hover:bg-red-100"
                       >
                         Renew Membership
@@ -275,7 +273,7 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Fitness Goal Information */}
+              {/* Fitness Goal Info */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -293,10 +291,9 @@ const Profile = () => {
                         Current Goal: {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        {user?.goal === 'weight_loss' 
+                        {user?.goal === 'weight_loss'
                           ? 'Focus on high-intensity workouts, cardio, and maintaining a caloric deficit for optimal weight loss results.'
-                          : 'Emphasize strength training, progressive overload, and adequate nutrition to build lean muscle mass effectively.'
-                        }
+                          : 'Emphasize strength training, progressive overload, and adequate nutrition to build lean muscle mass effectively.'}
                       </p>
                     </div>
                   </div>
@@ -308,6 +305,18 @@ const Profile = () => {
           {/* Payment Methods - Full Width */}
           <div className="mt-6">
             <PaymentMethods />
+          </div>
+
+          {/* Logout Button - Bottom */}
+          <div className="mt-10 max-w-md mx-auto">
+            <Button
+              variant="destructive"
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
