@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import NavigationBar from '@/components/NavigationBar';
@@ -11,12 +10,14 @@ import LoadingSpinner from '@/components/workout/LoadingSpinner';
 import ErrorDisplay from '@/components/workout/ErrorDisplay';
 import { Badge } from '@/components/ui/badge';
 import { Target } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WorkoutPlan = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { workoutPlans, loading, error } = useWorkoutPlans();
+  const { workoutPlans, loading, error, refetch } = useWorkoutPlans();
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState(user?.fitness_level || 'beginner');
 
   React.useEffect(() => {
     if (user) {
@@ -98,6 +99,19 @@ const WorkoutPlan = () => {
     }
   };
 
+  const handleLevelChange = async (level: 'beginner' | 'intermediate' | 'advanced') => {
+    setSelectedLevel(level);
+    if (!user) return;
+    // Update user fitness level in DB
+    await supabase
+      .from('users')
+      .update({ fitness_level: level })
+      .eq('id', user.id);
+    // Optionally update user context if needed
+    // Refetch workout plans
+    if (typeof refetch === 'function') refetch();
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -117,15 +131,28 @@ const WorkoutPlan = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Your Workout Plan
           </h1>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="font-semibold text-gray-700">Difficulty:</span>
+            <Select value={selectedLevel} onValueChange={handleLevelChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-4 text-gray-600">
             <span>Today is {currentDay}</span>
             <div className="flex items-center gap-2">
               <Badge 
                 variant="outline" 
-                className={`capitalize ${getFitnessLevelColor(user?.fitness_level || 'beginner')}`}
+                className={`capitalize ${getFitnessLevelColor(selectedLevel)}`}
               >
                 <Target className="h-3 w-3 mr-1" />
-                {user?.fitness_level || 'beginner'} level
+                {selectedLevel} level
               </Badge>
               <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
                 {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'}

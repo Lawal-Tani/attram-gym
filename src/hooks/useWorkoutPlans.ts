@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -280,136 +279,228 @@ const getDefaultPlansData = (goal: string, fitnessLevel: string) => {
   if (goal === 'weight_loss') {
     if (fitnessLevel === 'beginner') {
       return [
-        {
-          day_of_week: 'Monday',
-          title: 'Beginner Full Body',
-          exercises: [
-            { name: 'Modified Push-ups', sets: '2', reps: '8-12', rest: '60s' },
-            { name: 'Wall Sits', sets: '2', reps: '20-30s', rest: '60s' },
-            { name: 'Assisted Squats', sets: '2', reps: '10-15', rest: '60s' },
-            { name: 'Plank', sets: '2', reps: '15-30s', rest: '60s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Beginner Cardio',
-          exercises: [
-            { name: 'Jumping Jacks', sets: '2', reps: '20s', rest: '40s' },
-            { name: 'High Knees', sets: '2', reps: '20s', rest: '40s' },
-            { name: 'Mountain Climbers', sets: '2', reps: '15s', rest: '45s' }
-          ]
-        }
-      ];
-    } else if (fitnessLevel === 'intermediate') {
-      return [
-        {
-          day_of_week: 'Monday',
-          title: 'Intermediate Circuit',
-          exercises: [
-            { name: 'Push-ups', sets: '3', reps: '12-18', rest: '45s' },
-            { name: 'Jump Squats', sets: '3', reps: '15-20', rest: '45s' },
-            { name: 'Mountain Climbers', sets: '3', reps: '30s', rest: '30s' },
-            { name: 'Bulgarian Split Squats', sets: '3', reps: '10 each leg', rest: '45s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Intermediate HIIT',
-          exercises: [
-            { name: 'Burpees', sets: '3', reps: '10-15', rest: '45s' },
-            { name: 'Diamond Push-ups', sets: '3', reps: '8-12', rest: '45s' },
-            { name: 'Jump Squats', sets: '3', reps: '20', rest: '30s' }
-          ]
-        }
-      ];
-    } else {
-      return [
-        {
-          day_of_week: 'Monday',
-          title: 'Advanced HIIT',
-          exercises: [
-            { name: 'Advanced Push-ups', sets: '4', reps: '15-25', rest: '30s' },
-            { name: 'Pistol Squats', sets: '4', reps: '5-8 each leg', rest: '45s' },
-            { name: 'Burpees', sets: '4', reps: '12-20', rest: '30s' },
-            { name: 'Handstand Push-ups', sets: '3', reps: '5-10', rest: '60s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Advanced Power',
-          exercises: [
-            { name: 'Plyometric Push-ups', sets: '4', reps: '8-12', rest: '60s' },
-            { name: 'Jump Squats', sets: '4', reps: '25-30', rest: '45s' },
-            { name: 'Mountain Climbers', sets: '4', reps: '45s', rest: '15s' }
-          ]
-        }
+        { day_of_week: 'Monday', title: 'Full Body Strength', exercises: [
+          { name: 'Modified Push-ups', sets: '2', reps: '8-12', rest: '60s' },
+          { name: 'Wall Sits', sets: '2', reps: '20-30s', rest: '60s' },
+          { name: 'Assisted Squats', sets: '2', reps: '10-15', rest: '60s' },
+          { name: 'Plank', sets: '2', reps: '15-30s', rest: '60s' }
+        ] },
+        { day_of_week: 'Tuesday', title: 'Cardio Starter', exercises: [
+          { name: 'Jumping Jacks', sets: '2', reps: '20s', rest: '40s' },
+          { name: 'High Knees', sets: '2', reps: '20s', rest: '40s' },
+          { name: 'Butt Kicks', sets: '2', reps: '20s', rest: '40s' }
+        ] },
+        { day_of_week: 'Wednesday', title: 'Core & Balance', exercises: [
+          { name: 'Mountain Climbers', sets: '2', reps: '15s', rest: '45s' },
+          { name: 'Standing Crunches', sets: '2', reps: '15', rest: '45s' },
+          { name: 'Side Plank', sets: '2', reps: '15s each side', rest: '45s' }
+        ] },
+        { day_of_week: 'Thursday', title: 'Lower Body Burn', exercises: [
+          { name: 'Bodyweight Squats', sets: '2', reps: '12-15', rest: '60s' },
+          { name: 'Lunges', sets: '2', reps: '10 each leg', rest: '60s' },
+          { name: 'Calf Raises', sets: '2', reps: '15', rest: '45s' }
+        ] },
+        { day_of_week: 'Friday', title: 'Upper Body Focus', exercises: [
+          { name: 'Wall Push-ups', sets: '2', reps: '10-15', rest: '60s' },
+          { name: 'Arm Circles', sets: '2', reps: '30s', rest: '30s' },
+          { name: 'Chair Dips', sets: '2', reps: '8-12', rest: '60s' }
+        ] },
+        { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+          { name: 'Walking', sets: '1', reps: '20 min', rest: '-' },
+          { name: 'Stretching', sets: '1', reps: '10 min', rest: '-' }
+        ] },
+        { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+          { name: 'Yoga', sets: '1', reps: '20 min', rest: '-' },
+          { name: 'Foam Rolling', sets: '1', reps: '10 min', rest: '-' }
+        ] }
       ];
     }
-  } else {
-    // Muscle gain plans by fitness level
-    if (fitnessLevel === 'beginner') {
+    if (fitnessLevel === 'intermediate') {
       return [
-        {
-          day_of_week: 'Monday',
-          title: 'Beginner Upper Body',
-          exercises: [
-            { name: 'Modified Push-ups', sets: '3', reps: '8-12', rest: '90s' },
-            { name: 'Pike Push-ups', sets: '2', reps: '5-8', rest: '90s' },
-            { name: 'Wall Sits', sets: '3', reps: '30-45s', rest: '60s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Beginner Lower Body',
-          exercises: [
-            { name: 'Assisted Squats', sets: '3', reps: '12-15', rest: '90s' },
-            { name: 'Wall Sits', sets: '3', reps: '30-60s', rest: '90s' },
-            { name: 'Calf Raises', sets: '3', reps: '15-20', rest: '60s' }
-          ]
-        }
-      ];
-    } else if (fitnessLevel === 'intermediate') {
-      return [
-        {
-          day_of_week: 'Monday',
-          title: 'Intermediate Push',
-          exercises: [
-            { name: 'Push-ups', sets: '4', reps: '12-15', rest: '90s' },
-            { name: 'Diamond Push-ups', sets: '3', reps: '8-12', rest: '90s' },
-            { name: 'Pike Push-ups', sets: '3', reps: '8-12', rest: '90s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Intermediate Legs',
-          exercises: [
-            { name: 'Squats', sets: '4', reps: '15-20', rest: '90s' },
-            { name: 'Bulgarian Split Squats', sets: '3', reps: '10-12 each', rest: '90s' },
-            { name: 'Jump Squats', sets: '3', reps: '12-15', rest: '90s' }
-          ]
-        }
-      ];
-    } else {
-      return [
-        {
-          day_of_week: 'Monday',
-          title: 'Advanced Push',
-          exercises: [
-            { name: 'Handstand Push-ups', sets: '4', reps: '8-12', rest: '2 min' },
-            { name: 'Advanced Push-ups', sets: '4', reps: '15-20', rest: '90s' },
-            { name: 'Pike Push-ups', sets: '4', reps: '12-15', rest: '90s' }
-          ]
-        },
-        {
-          day_of_week: 'Wednesday',
-          title: 'Advanced Legs',
-          exercises: [
-            { name: 'Pistol Squats', sets: '4', reps: '8-10 each', rest: '2 min' },
-            { name: 'Jump Squats', sets: '4', reps: '20-25', rest: '90s' },
-            { name: 'Bulgarian Split Squats', sets: '4', reps: '15 each', rest: '90s' }
-          ]
-        }
+        { day_of_week: 'Monday', title: 'Circuit Blast', exercises: [
+          { name: 'Push-ups', sets: '3', reps: '12-18', rest: '45s' },
+          { name: 'Jump Squats', sets: '3', reps: '15-20', rest: '45s' },
+          { name: 'Mountain Climbers', sets: '3', reps: '30s', rest: '30s' },
+          { name: 'Bulgarian Split Squats', sets: '3', reps: '10 each leg', rest: '45s' }
+        ] },
+        { day_of_week: 'Tuesday', title: 'Cardio HIIT', exercises: [
+          { name: 'Burpees', sets: '3', reps: '10-15', rest: '45s' },
+          { name: 'High Knees', sets: '3', reps: '20s', rest: '40s' },
+          { name: 'Skaters', sets: '3', reps: '20', rest: '40s' }
+        ] },
+        { day_of_week: 'Wednesday', title: 'Core & Cardio', exercises: [
+          { name: 'Plank', sets: '3', reps: '30s', rest: '45s' },
+          { name: 'Russian Twists', sets: '3', reps: '20', rest: '45s' },
+          { name: 'Jumping Jacks', sets: '3', reps: '30s', rest: '30s' }
+        ] },
+        { day_of_week: 'Thursday', title: 'Lower Body Circuit', exercises: [
+          { name: 'Lunges', sets: '3', reps: '12 each leg', rest: '60s' },
+          { name: 'Calf Raises', sets: '3', reps: '20', rest: '45s' },
+          { name: 'Wall Sits', sets: '3', reps: '45s', rest: '60s' }
+        ] },
+        { day_of_week: 'Friday', title: 'Upper Body Circuit', exercises: [
+          { name: 'Diamond Push-ups', sets: '3', reps: '8-12', rest: '45s' },
+          { name: 'Pike Push-ups', sets: '3', reps: '8-12', rest: '45s' },
+          { name: 'Arm Circles', sets: '3', reps: '30s', rest: '30s' }
+        ] },
+        { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+          { name: 'Walking', sets: '1', reps: '25 min', rest: '-' },
+          { name: 'Stretching', sets: '1', reps: '12 min', rest: '-' }
+        ] },
+        { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+          { name: 'Yoga', sets: '1', reps: '25 min', rest: '-' },
+          { name: 'Foam Rolling', sets: '1', reps: '12 min', rest: '-' }
+        ] }
       ];
     }
+    // Advanced
+    return [
+      { day_of_week: 'Monday', title: 'HIIT Power', exercises: [
+        { name: 'Advanced Push-ups', sets: '4', reps: '15-25', rest: '30s' },
+        { name: 'Pistol Squats', sets: '4', reps: '5-8 each leg', rest: '45s' },
+        { name: 'Burpees', sets: '4', reps: '12-20', rest: '30s' },
+        { name: 'Handstand Push-ups', sets: '3', reps: '5-10', rest: '60s' }
+      ] },
+      { day_of_week: 'Tuesday', title: 'Cardio Endurance', exercises: [
+        { name: 'Mountain Climbers', sets: '4', reps: '45s', rest: '30s' },
+        { name: 'High Knees', sets: '4', reps: '30s', rest: '30s' },
+        { name: 'Skaters', sets: '4', reps: '25', rest: '30s' }
+      ] },
+      { day_of_week: 'Wednesday', title: 'Core Shred', exercises: [
+        { name: 'Plank', sets: '4', reps: '45s', rest: '30s' },
+        { name: 'Side Plank', sets: '4', reps: '30s each side', rest: '30s' },
+        { name: 'Russian Twists', sets: '4', reps: '30', rest: '30s' },
+        { name: 'V-Ups', sets: '4', reps: '15', rest: '30s' }
+      ] },
+      { day_of_week: 'Thursday', title: 'Lower Body Blast', exercises: [
+        { name: 'Jump Squats', sets: '4', reps: '20', rest: '45s' },
+        { name: 'Bulgarian Split Squats', sets: '4', reps: '12 each leg', rest: '60s' },
+        { name: 'Calf Raises', sets: '4', reps: '25', rest: '45s' }
+      ] },
+      { day_of_week: 'Friday', title: 'Upper Body', exercises: [
+        { name: 'Diamond Push-ups', sets: '4', reps: '12-15', rest: '90s' },
+        { name: 'Handstand Push-ups', sets: '4', reps: '8-12', rest: '60s' },
+        { name: 'Arm Circles', sets: '4', reps: '45s', rest: '30s' }
+      ] },
+      { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+        { name: 'Walking', sets: '1', reps: '30 min', rest: '-' },
+        { name: 'Stretching', sets: '1', reps: '15 min', rest: '-' }
+      ] },
+      { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+        { name: 'Yoga', sets: '1', reps: '30 min', rest: '-' },
+        { name: 'Foam Rolling', sets: '1', reps: '15 min', rest: '-' }
+      ] }
+    ];
   }
+  // Muscle gain plans
+  if (fitnessLevel === 'beginner') {
+    return [
+      { day_of_week: 'Monday', title: 'Upper Body', exercises: [
+        { name: 'Modified Push-ups', sets: '3', reps: '8-12', rest: '90s' },
+        { name: 'Pike Push-ups', sets: '2', reps: '5-8', rest: '90s' },
+        { name: 'Wall Sits', sets: '3', reps: '30-45s', rest: '60s' }
+      ] },
+      { day_of_week: 'Tuesday', title: 'Lower Body', exercises: [
+        { name: 'Assisted Squats', sets: '3', reps: '12-15', rest: '90s' },
+        { name: 'Wall Sits', sets: '3', reps: '30-60s', rest: '90s' },
+        { name: 'Calf Raises', sets: '3', reps: '15-20', rest: '60s' }
+      ] },
+      { day_of_week: 'Wednesday', title: 'Core & Arms', exercises: [
+        { name: 'Plank', sets: '3', reps: '30s', rest: '60s' },
+        { name: 'Chair Dips', sets: '3', reps: '10-12', rest: '60s' },
+        { name: 'Arm Circles', sets: '3', reps: '30s', rest: '30s' }
+      ] },
+      { day_of_week: 'Thursday', title: 'Full Body', exercises: [
+        { name: 'Push-ups', sets: '3', reps: '10-15', rest: '90s' },
+        { name: 'Lunges', sets: '3', reps: '10 each leg', rest: '90s' },
+        { name: 'Jumping Jacks', sets: '3', reps: '30s', rest: '60s' }
+      ] },
+      { day_of_week: 'Friday', title: 'Upper Body', exercises: [
+        { name: 'Wall Push-ups', sets: '3', reps: '10-15', rest: '90s' },
+        { name: 'Pike Push-ups', sets: '3', reps: '8-12', rest: '90s' },
+        { name: 'Arm Circles', sets: '3', reps: '30s', rest: '30s' }
+      ] },
+      { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+        { name: 'Walking', sets: '1', reps: '20 min', rest: '-' },
+        { name: 'Stretching', sets: '1', reps: '10 min', rest: '-' }
+      ] },
+      { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+        { name: 'Yoga', sets: '1', reps: '20 min', rest: '-' },
+        { name: 'Foam Rolling', sets: '1', reps: '10 min', rest: '-' }
+      ] }
+    ];
+  }
+  if (fitnessLevel === 'intermediate') {
+    return [
+      { day_of_week: 'Monday', title: 'Push Day', exercises: [
+        { name: 'Push-ups', sets: '4', reps: '12-15', rest: '90s' },
+        { name: 'Diamond Push-ups', sets: '3', reps: '8-12', rest: '90s' },
+        { name: 'Pike Push-ups', sets: '3', reps: '8-12', rest: '90s' }
+      ] },
+      { day_of_week: 'Tuesday', title: 'Legs & Core', exercises: [
+        { name: 'Squats', sets: '4', reps: '15-20', rest: '90s' },
+        { name: 'Bulgarian Split Squats', sets: '3', reps: '10-12 each', rest: '90s' },
+        { name: 'Plank', sets: '3', reps: '45s', rest: '60s' }
+      ] },
+      { day_of_week: 'Wednesday', title: 'Pull Day', exercises: [
+        { name: 'Pull-ups', sets: '3', reps: '6-10', rest: '90s' },
+        { name: 'Chair Dips', sets: '3', reps: '10-12', rest: '60s' },
+        { name: 'Arm Circles', sets: '3', reps: '30s', rest: '30s' }
+      ] },
+      { day_of_week: 'Thursday', title: 'Full Body', exercises: [
+        { name: 'Jump Squats', sets: '3', reps: '15-20', rest: '90s' },
+        { name: 'Lunges', sets: '3', reps: '12 each leg', rest: '90s' },
+        { name: 'Mountain Climbers', sets: '3', reps: '30s', rest: '60s' }
+      ] },
+      { day_of_week: 'Friday', title: 'Upper Body', exercises: [
+        { name: 'Wall Push-ups', sets: '3', reps: '10-15', rest: '90s' },
+        { name: 'Pike Push-ups', sets: '3', reps: '8-12', rest: '90s' },
+        { name: 'Diamond Push-ups', sets: '3', reps: '8-12', rest: '90s' }
+      ] },
+      { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+        { name: 'Walking', sets: '1', reps: '25 min', rest: '-' },
+        { name: 'Stretching', sets: '1', reps: '12 min', rest: '-' }
+      ] },
+      { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+        { name: 'Yoga', sets: '1', reps: '25 min', rest: '-' },
+        { name: 'Foam Rolling', sets: '1', reps: '12 min', rest: '-' }
+      ] }
+    ];
+  }
+  // Advanced
+  return [
+    { day_of_week: 'Monday', title: 'Push Power', exercises: [
+      { name: 'Handstand Push-ups', sets: '4', reps: '8-12', rest: '2 min' },
+      { name: 'Advanced Push-ups', sets: '4', reps: '15-20', rest: '90s' },
+      { name: 'Pike Push-ups', sets: '4', reps: '12-15', rest: '90s' }
+    ] },
+    { day_of_week: 'Tuesday', title: 'Legs & Core', exercises: [
+      { name: 'Pistol Squats', sets: '4', reps: '8-10 each', rest: '2 min' },
+      { name: 'Jump Squats', sets: '4', reps: '20-25', rest: '90s' },
+      { name: 'Plank', sets: '4', reps: '60s', rest: '60s' }
+    ] },
+    { day_of_week: 'Wednesday', title: 'Pull Power', exercises: [
+      { name: 'Pull-ups', sets: '4', reps: '8-12', rest: '90s' },
+      { name: 'Muscle-ups', sets: '3', reps: '3-8', rest: '3 min' },
+      { name: 'Chair Dips', sets: '4', reps: '12-15', rest: '60s' }
+    ] },
+    { day_of_week: 'Thursday', title: 'Full Body', exercises: [
+      { name: 'Burpees', sets: '4', reps: '20', rest: '60s' },
+      { name: 'Bulgarian Split Squats', sets: '4', reps: '15 each', rest: '90s' },
+      { name: 'Mountain Climbers', sets: '4', reps: '45s', rest: '60s' }
+    ] },
+    { day_of_week: 'Friday', title: 'Upper Body', exercises: [
+      { name: 'Diamond Push-ups', sets: '4', reps: '12-15', rest: '90s' },
+      { name: 'Handstand Push-ups', sets: '4', reps: '8-12', rest: '60s' },
+      { name: 'Arm Circles', sets: '4', reps: '45s', rest: '30s' }
+    ] },
+    { day_of_week: 'Saturday', title: 'Active Recovery', exercises: [
+      { name: 'Walking', sets: '1', reps: '30 min', rest: '-' },
+      { name: 'Stretching', sets: '1', reps: '15 min', rest: '-' }
+    ] },
+    { day_of_week: 'Sunday', title: 'Rest & Mobility', exercises: [
+      { name: 'Yoga', sets: '1', reps: '30 min', rest: '-' },
+      { name: 'Foam Rolling', sets: '1', reps: '15 min', rest: '-' }
+    ] }
+  ];
 };

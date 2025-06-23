@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -48,28 +47,29 @@ const Login = () => {
     password: '',
     confirmPassword: '',
     goal: 'weight_loss' as 'weight_loss' | 'muscle_gain',
-    subscription_plan: 'basic'
+    subscription_plan: 'basic',
+    fitness_level: 'beginner'
   });
 
   const subscriptionPlans = [
     {
       id: 'basic',
       name: 'Basic',
-      price: '$9.99/month',
+      price: '₵120/month',
       icon: Star,
       features: ['Access to basic workouts', 'Progress tracking', 'Basic nutrition tips']
     },
     {
       id: 'premium',
       name: 'Premium',
-      price: '$19.99/month',
+      price: '₵220/month',
       icon: Crown,
       features: ['All basic features', 'Personal trainer chat', 'Custom meal plans', 'Advanced analytics']
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: '$29.99/month',
+      price: '₵320/month',
       icon: Zap,
       features: ['All premium features', '1-on-1 video sessions', 'Supplement recommendations', 'Priority support']
     }
@@ -131,7 +131,8 @@ const Login = () => {
         email: signupData.email,
         password: signupData.password,
         goal: signupData.goal,
-        subscription_plan: signupData.subscription_plan
+        subscription_plan: signupData.subscription_plan,
+        fitness_level: signupData.fitness_level as 'beginner' | 'intermediate' | 'advanced'
       });
 
       if (success) {
@@ -145,7 +146,8 @@ const Login = () => {
           password: '',
           confirmPassword: '',
           goal: 'weight_loss',
-          subscription_plan: 'basic'
+          subscription_plan: 'basic',
+          fitness_level: 'beginner'
         });
       }
     } catch (error) {

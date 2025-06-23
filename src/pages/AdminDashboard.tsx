@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import NavigationBar from '@/components/NavigationBar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Users, UserPlus, Calendar, Shield } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Member {
   id: string;
@@ -22,26 +22,9 @@ interface Member {
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [members, setMembers] = useState<Member[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      goal: 'muscle_gain',
-      membershipExpiry: '2024-12-31',
-      startDate: '2024-01-01',
-      role: 'user'
-    },
-    {
-      id: '3',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      goal: 'weight_loss',
-      membershipExpiry: '2024-06-15',
-      startDate: '2024-01-15',
-      role: 'user'
-    }
-  ]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [newUser, setNewUser] = useState({
     name: '',
@@ -50,6 +33,35 @@ const AdminDashboard = () => {
     membershipExpiry: '',
     role: 'user' as 'user' | 'admin'
   });
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('users')
+          .select('id, name, goal, role, membership_expiry, start_date');
+        if (fetchError) throw fetchError;
+        setMembers(
+          data.map((u: any) => ({
+            id: u.id,
+            name: u.name,
+            email: '', // Email not in schema, add if available
+            goal: u.goal,
+            membershipExpiry: u.membership_expiry,
+            startDate: u.start_date,
+            role: u.role,
+          }))
+        );
+      } catch (err: any) {
+        setError(err.message || 'Failed to load members');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   const handleAddUser = () => {
     if (newUser.name && newUser.email && newUser.membershipExpiry) {
@@ -80,6 +92,9 @@ const AdminDashboard = () => {
   const activeMembers = members.filter(m => getMembershipStatus(m.membershipExpiry).status !== 'expired').length;
   const expiringMembers = members.filter(m => getMembershipStatus(m.membershipExpiry).status === 'expiring').length;
   const totalAdmins = members.filter(m => m.role === 'admin').length;
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-background">
