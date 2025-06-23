@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,10 @@ const Profile = () => {
     name: user?.name || '',
     goal: user?.goal || 'weight_loss'
   });
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const handleSave = () => {
     toast({
@@ -77,13 +80,14 @@ const Profile = () => {
                   variant="ghost"
                   size="icon"
                   aria-label="Toggle dark mode"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                  disabled={!mounted}
                 >
-                  {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  {mounted && (resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                {mounted && (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
               </TooltipContent>
             </Tooltip>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -177,16 +176,6 @@ const NavigationBar = () => {
 
             {/* User Menu */}
             <div className="flex items-center space-x-3">
-              {/* Dark Mode Toggle */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={toggleDarkMode}
-                className="text-muted-foreground hover:text-foreground p-1"
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-
               <div className="hidden sm:block text-right">
                 <p className="text-sm font-medium text-foreground">{user?.name}</p>
                 <p className="text-xs text-muted-foreground capitalize">
