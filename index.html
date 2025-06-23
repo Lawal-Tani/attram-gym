@@ -1,44 +1,49 @@
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>attram-gym</title>
-  <meta name="description" content="Your personal gym companion for tracking workouts and progress" />
-  <meta name="author" content="Tani" />
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>attram-gym</title>
+    <meta name="description" content="Your personal gym companion for tracking workouts and progress" />
+    <meta name="author" content="Tani" />
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" />
 
-  <!-- Icons -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="/android-chrome-512x512.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="icon" href="/favicon.ico" />
+    <!-- Web App Capable -->
+    <meta name="mobile-web-app-capable" content="yes" />
 
-  <!-- iOS PWA Settings -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Attram Gym" />
+    <!-- Social Sharing -->
+    <meta property="og:title" content="Attram Gym" />
+    <meta property="og:description" content="Your personal gym companion for tracking workouts and progress" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/android-chrome-512x512.png" />
 
-  <!-- Social Sharing -->
-  <meta property="og:title" content="Attram Gym" />
-  <meta property="og:description" content="Your personal gym companion for tracking workouts and progress" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="/android-chrome-512x512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@attram_gym" />
+    <meta name="twitter:image" content="/android-chrome-512x512.png" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@attram_gym" />
-  <meta name="twitter:image" content="/android-chrome-512x512.png" />
+    <!-- Font fallback (optional) -->
+    <style>
+      @font-face {
+        font-family: 'fallback-font';
+        src: local('Arial');
+        font-display: swap;
+      }
+      body {
+        font-family: 'fallback-font';
+      }
+    </style>
+  </head>
 
-  <!-- Font fallback -->
-  <style>
-    @font-face {
-      font-family: 'fallback-font';
-      src: local('Arial');
-      font-display: swap;
-    }
-    body {
-      font-family: 'fallback-font';
-    }
-  </style>
-</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
