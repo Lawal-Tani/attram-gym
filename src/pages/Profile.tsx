@@ -10,6 +10,9 @@ import { User, Target, Calendar, Clock, Edit2, Save, X, Crown, LogOut } from 'lu
 import NavigationBar from '@/components/NavigationBar';
 import PaymentMethods from '@/components/PaymentMethods';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const Profile = () => {
   const { user, session, logout } = useAuth();
@@ -19,6 +22,7 @@ const Profile = () => {
     name: user?.name || '',
     goal: user?.goal || 'weight_loss'
   });
+  const { setTheme, theme } = useTheme();
 
   const handleSave = () => {
     toast({
@@ -60,11 +64,30 @@ const Profile = () => {
   const membershipDays = getMembershipDuration();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+    <div className="min-h-screen bg-background text-foreground">
       <NavigationBar />
 
       <div className="container mx-auto px-4 py-8 pb-28">
         <div className="max-w-4xl mx-auto">
+          {/* Dark mode toggle button */}
+          <div className="flex justify-end mb-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Toggle dark mode"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                >
+                  {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Your Profile

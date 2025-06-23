@@ -49,7 +49,9 @@ const WorkoutPlan = () => {
 
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+      // Find the workout object
+      const workout = workoutPlans.find(w => w.id === workoutPlanId);
+      // Insert into workout_completions as before
       const { error } = await supabase
         .from('workout_completions')
         .insert({
@@ -58,10 +60,33 @@ const WorkoutPlan = () => {
           completed_date: today,
           duration_minutes: 45 // Default duration
         });
-
+      // Insert into progress_entries for each exercise (strength chart)
+      if (workout && workout.exercises && Array.isArray(workout.exercises)) {
+        const strengthEntries = workout.exercises.map((exercise: any) => ({
+          user_id: user.id,
+          exercise_name: exercise.name,
+          weight: 45, // Default weight
+          date: today,
+          workout_type: 'strength',
+        }));
+        if (strengthEntries.length > 0) {
+          await supabase.from('progress_entries').insert(strengthEntries);
+        }
+      }
+      // Insert into progress_entries for workout distribution chart (one entry for the workout type)
+      if (workout && workout.goal_type) {
+        await supabase.from('progress_entries').insert([
+          {
+            user_id: user.id,
+            exercise_name: workout.title, // Or use workout.goal_type if preferred
+            weight: null, // Not needed for distribution
+            date: today,
+            workout_type: workout.goal_type,
+          },
+        ]);
+      }
       if (!error) {
         setCompletedWorkouts(prev => [...prev, workoutPlanId]);
-        
         toast({
           title: "Workout Completed! 🎉",
           description: `Great job completing your ${dayTitle} workout!`,
@@ -123,7 +148,7 @@ const WorkoutPlan = () => {
   const currentDay = getCurrentDay();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <NavigationBar />
       
       <div className="container mx-auto px-4 py-8">

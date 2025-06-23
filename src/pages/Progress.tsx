@@ -223,7 +223,7 @@ const ProgressPage = () => {
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-20">
+    <div className="min-h-screen bg-white dark:bg-gray-900 pb-20 md:pb-20">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
