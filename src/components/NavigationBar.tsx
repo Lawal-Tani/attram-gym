@@ -193,15 +193,6 @@ const NavigationBar = () => {
                   {user?.goal?.replace('_', ' ')} • {user?.role}
                 </p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={logout}
-                className="text-muted-foreground hover:text-red-600 p-1"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:ml-2 sm:inline">Logout</span>
-              </Button>
             </div>
           </div>
         </div>
