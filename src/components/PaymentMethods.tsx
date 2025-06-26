@@ -9,12 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
   id: string;
-  type: 'card' | 'paypal' | 'bank';
+  type: 'card' | 'paypal' | 'bank' | 'momo';
   last4?: string;
   brand?: string;
   expiryDate?: string;
   email?: string;
   bankName?: string;
+  phone?: string;
+  provider?: string;
   isDefault: boolean;
 }
 
@@ -39,14 +41,16 @@ const PaymentMethods = () => {
   ]);
 
   const [newPaymentMethod, setNewPaymentMethod] = useState({
-    type: 'card' as 'card' | 'paypal' | 'bank',
+    type: 'card' as 'card' | 'paypal' | 'bank' | 'momo',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
     name: '',
     email: '',
     bankName: '',
-    accountNumber: ''
+    accountNumber: '',
+    phone: '',
+    provider: '',
   });
 
   const handleAddPaymentMethod = () => {
@@ -65,6 +69,9 @@ const PaymentMethods = () => {
     } else if (newPaymentMethod.type === 'bank') {
       newMethod.bankName = newPaymentMethod.bankName;
       newMethod.last4 = newPaymentMethod.accountNumber.slice(-4);
+    } else if (newPaymentMethod.type === 'momo') {
+      newMethod.phone = newPaymentMethod.phone;
+      newMethod.provider = newPaymentMethod.provider;
     }
 
     setPaymentMethods([...paymentMethods, newMethod]);
@@ -76,7 +83,9 @@ const PaymentMethods = () => {
       name: '',
       email: '',
       bankName: '',
-      accountNumber: ''
+      accountNumber: '',
+      phone: '',
+      provider: '',
     });
     setShowAddForm(false);
     
@@ -113,6 +122,8 @@ const PaymentMethods = () => {
         return <div className="h-5 w-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">P</div>;
       case 'bank':
         return <div className="h-5 w-5 bg-green-600 rounded text-white text-xs flex items-center justify-center font-bold">B</div>;
+      case 'momo':
+        return <div className="h-5 w-5 bg-yellow-500 rounded text-white text-xs flex items-center justify-center font-bold">M</div>;
       default:
         return <CreditCard className="h-5 w-5" />;
     }
@@ -139,6 +150,13 @@ const PaymentMethods = () => {
           <div>
             <p className="font-medium">{method.bankName}</p>
             <p className="text-sm text-gray-600">•••• {method.last4}</p>
+          </div>
+        );
+      case 'momo':
+        return (
+          <div>
+            <p className="font-medium">Mobile Money ({method.provider})</p>
+            <p className="text-sm text-gray-600">{method.phone}</p>
           </div>
         );
       default:
@@ -212,12 +230,13 @@ const PaymentMethods = () => {
                 value={newPaymentMethod.type}
                 onChange={(e) => setNewPaymentMethod({ 
                   ...newPaymentMethod, 
-                  type: e.target.value as 'card' | 'paypal' | 'bank' 
+                  type: e.target.value as 'card' | 'paypal' | 'bank' | 'momo' 
                 })}
               >
                 <option value="card">Credit/Debit Card</option>
                 <option value="paypal">PayPal</option>
                 <option value="bank">Bank Account</option>
+                <option value="momo">Mobile Money (MoMo)</option>
               </select>
             </div>
 
@@ -312,6 +331,27 @@ const PaymentMethods = () => {
                       ...newPaymentMethod, 
                       accountNumber: e.target.value 
                     })}
+                  />
+                </div>
+              </>
+            )}
+
+            {newPaymentMethod.type === 'momo' && (
+              <>
+                <div className="space-y-2">
+                  <Label>Provider</Label>
+                  <Input
+                    placeholder="MTN, AirtelTigo, Vodafone, etc."
+                    value={newPaymentMethod.provider}
+                    onChange={e => setNewPaymentMethod({ ...newPaymentMethod, provider: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number</Label>
+                  <Input
+                    placeholder="e.g. 0241234567"
+                    value={newPaymentMethod.phone}
+                    onChange={e => setNewPaymentMethod({ ...newPaymentMethod, phone: e.target.value })}
                   />
                 </div>
               </>

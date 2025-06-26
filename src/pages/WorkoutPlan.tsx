@@ -9,7 +9,7 @@ import WorkoutTips from '@/components/workout/WorkoutTips';
 import LoadingSpinner from '@/components/workout/LoadingSpinner';
 import ErrorDisplay from '@/components/workout/ErrorDisplay';
 import { Badge } from '@/components/ui/badge';
-import { Target } from 'lucide-react';
+import { Target, Dumbbell, Flame, Star } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WorkoutPlan = () => {
@@ -18,6 +18,8 @@ const WorkoutPlan = () => {
   const { workoutPlans, loading, error, refetch } = useWorkoutPlans();
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState(user?.fitness_level || 'beginner');
+
+  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   React.useEffect(() => {
     if (user) {
@@ -137,6 +139,14 @@ const WorkoutPlan = () => {
     if (typeof refetch === 'function') refetch();
   };
 
+  const onViewWorkout = (workoutPlanId: string) => {
+    const workout = workoutPlans.find(w => w.id === workoutPlanId);
+    if (workout) {
+      alert(`Viewing workout: ${workout.title}`);
+      // You can replace this with a modal or navigation later
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -146,6 +156,10 @@ const WorkoutPlan = () => {
   }
 
   const currentDay = getCurrentDay();
+
+  const sortedWorkoutPlans = [...workoutPlans].sort((a, b) => {
+    return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
+  });
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -158,16 +172,28 @@ const WorkoutPlan = () => {
           </h1>
           <div className="flex items-center gap-4 mb-4">
             <span className="font-semibold text-gray-700">Difficulty:</span>
-            <Select value={selectedLevel} onValueChange={handleLevelChange}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              {['beginner', 'intermediate', 'advanced'].map(level => (
+                <button
+                  key={level}
+                  onClick={() => handleLevelChange(level as 'beginner' | 'intermediate' | 'advanced')}
+                  className={`px-4 py-2 rounded-full flex items-center gap-1 font-semibold border transition-all
+                    ${selectedLevel === level
+                      ? level === 'beginner'
+                        ? 'bg-green-500 text-white border-green-600 shadow-lg'
+                        : level === 'intermediate'
+                          ? 'bg-yellow-400 text-white border-yellow-500 shadow-lg'
+                          : 'bg-red-500 text-white border-red-600 shadow-lg'
+                      : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}
+                  `}
+                >
+                  {level === 'beginner' && <Dumbbell className="w-4 h-4 mr-1" />}
+                  {level === 'intermediate' && <Flame className="w-4 h-4 mr-1" />}
+                  {level === 'advanced' && <Star className="w-4 h-4 mr-1" />}
+                  <span className="capitalize">{level}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-4 text-gray-600">
             <span>Today is {currentDay}</span>
@@ -187,7 +213,7 @@ const WorkoutPlan = () => {
         </div>
 
         <div className="grid gap-6">
-          {workoutPlans.map((workout) => {
+          {sortedWorkoutPlans.map((workout) => {
             const isToday = workout.day_of_week === currentDay;
             const isCompleted = isWorkoutCompleted(workout.id);
             
@@ -198,6 +224,7 @@ const WorkoutPlan = () => {
                 isToday={isToday}
                 isCompleted={isCompleted}
                 onComplete={markWorkoutComplete}
+                onView={onViewWorkout}
               />
             );
           })}

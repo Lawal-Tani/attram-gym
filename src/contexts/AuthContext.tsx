@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
@@ -6,13 +5,19 @@ import { Session } from '@supabase/supabase-js';
 interface UserProfile {
   id: string;
   name: string;
-  goal: 'weight_loss' | 'muscle_gain';
+  goal: 'weight_loss' | 'muscle_gain' | 'endurance';
   role: 'user' | 'admin';
   membership_expiry: string;
   start_date: string;
   subscription_plan?: string;
   payment_method?: string;
   fitness_level: 'beginner' | 'intermediate' | 'advanced';
+  equipment_access?: string[];
+  limitations?: string[];
+  injuries?: string;
+  experience_years?: number;
+  workout_frequency?: string;
+  preferred_duration?: string;
 }
 
 interface AuthContextType {
@@ -24,13 +29,14 @@ interface AuthContextType {
     name: string;
     email: string;
     password: string;
-    goal: 'weight_loss' | 'muscle_gain';
+    goal: 'weight_loss' | 'muscle_gain' | 'endurance';
     subscription_plan: string;
     fitness_level: 'beginner' | 'intermediate' | 'advanced';
   }) => Promise<boolean>;
   loading: boolean;
   authChecked: boolean;
   error: string | null;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,13 +76,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const validatedProfile: UserProfile = {
           id: profile.id,
           name: profile.name || 'Anonymous',
-          goal: profile.goal === 'muscle_gain' ? 'muscle_gain' : 'weight_loss',
+          goal: profile.goal === 'muscle_gain' ? 'muscle_gain' : profile.goal === 'endurance' ? 'endurance' : 'weight_loss',
           role: profile.role === 'admin' ? 'admin' : 'user',
           membership_expiry: profile.membership_expiry || new Date().toISOString(),
           start_date: profile.start_date || new Date().toISOString(),
           subscription_plan: profile.subscription_plan || 'basic',
           payment_method: profile.payment_method || 'none',
-          fitness_level: profile.fitness_level || 'beginner'
+          fitness_level: profile.fitness_level || 'beginner',
+          equipment_access: profile.equipment_access || [],
+          limitations: profile.limitations || [],
+          injuries: profile.injuries || '',
+          experience_years: profile.experience_years || 0,
+          workout_frequency: profile.workout_frequency || '3-4',
+          preferred_duration: profile.preferred_duration || '30-45',
         };
         console.log('User profile fetched successfully:', validatedProfile);
         return validatedProfile;
@@ -102,6 +114,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthChecked(true);
     console.log('Auth state updated - user:', !!newSession?.user);
   }, [fetchUserProfile]);
+
+  const refreshUser = useCallback(async () => {
+    if (session?.user) {
+      const profile = await fetchUserProfile(session.user.id);
+      setUser(profile);
+    }
+  }, [session, fetchUserProfile]);
 
   useEffect(() => {
     console.log('AuthProvider useEffect starting');
@@ -192,7 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string;
     email: string;
     password: string;
-    goal: 'weight_loss' | 'muscle_gain';
+    goal: 'weight_loss' | 'muscle_gain' | 'endurance';
     subscription_plan: string;
     fitness_level: 'beginner' | 'intermediate' | 'advanced';
   }): Promise<boolean> => {
@@ -273,7 +292,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     loading,
     authChecked,
-    error
+    error,
+    refreshUser,
   };
 
   return (

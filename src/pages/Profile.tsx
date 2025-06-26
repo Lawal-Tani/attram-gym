@@ -10,29 +10,54 @@ import { User, Target, Calendar, Clock, Edit2, Save, X, Crown, LogOut } from 'lu
 import NavigationBar from '@/components/NavigationBar';
 import PaymentMethods from '@/components/PaymentMethods';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
-  const { user, session, logout } = useAuth();
+  const { user, session, logout, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     name: user?.name || '',
-    goal: user?.goal || 'weight_loss'
+    goal: user?.goal || 'weight_loss',
+    fitness_level: user?.fitness_level || 'beginner',
+    experience_years: user?.experience_years || 0,
+    workout_frequency: user?.workout_frequency || '3-4',
+    preferred_duration: user?.preferred_duration || '30-45',
+    equipment_access: user?.equipment_access || [],
+    limitations: user?.limitations || [],
+    injuries: user?.injuries || '',
   });
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
-
-  const handleSave = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully.",
-    });
-    setIsEditing(false);
+  const handleSave = async () => {
+    // Save to Supabase
+    const { error } = await supabase
+      .from('users')
+      .update({
+        name: editData.name,
+        goal: editData.goal,
+        fitness_level: editData.fitness_level,
+        experience_years: editData.experience_years,
+        workout_frequency: editData.workout_frequency,
+        preferred_duration: editData.preferred_duration,
+        equipment_access: editData.equipment_access,
+        limitations: editData.limitations,
+        injuries: editData.injuries,
+      })
+      .eq('id', user.id);
+    if (!error) {
+      await refreshUser();
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+      });
+      setIsEditing(false);
+    } else {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const getDaysUntilExpiry = () => {
@@ -72,26 +97,6 @@ const Profile = () => {
 
       <div className="container mx-auto px-4 py-8 pb-28">
         <div className="max-w-4xl mx-auto">
-          {/* Dark mode toggle button */}
-          <div className="flex justify-end mb-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Toggle dark mode"
-                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                  disabled={!mounted}
-                >
-                  {mounted && (resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {mounted && (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Your Profile
@@ -109,7 +114,7 @@ const Profile = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5 text-emerald-500" />
+                      <User className="h-5 w-5 text-accent" />
                       Personal Information
                     </CardTitle>
                     {!isEditing ? (
@@ -126,7 +131,7 @@ const Profile = () => {
                         <Button
                           size="sm"
                           onClick={handleSave}
-                          className="bg-emerald-500 hover:bg-emerald-600"
+                          className="bg-accent hover:bg-accent-foreground"
                         >
                           <Save className="h-4 w-4 mr-2" />
                           Save
@@ -174,6 +179,42 @@ const Profile = () => {
                             </Badge>
                           </div>
                         </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Fitness Level</Label>
+                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.fitness_level}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Experience (Years)</Label>
+                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.experience_years}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Workout Frequency</Label>
+                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.workout_frequency}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Preferred Duration</Label>
+                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.preferred_duration}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Equipment Access</Label>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {user?.equipment_access?.length ? user.equipment_access.map((eq: string) => (
+                              <Badge key={eq}>{eq}</Badge>
+                            )) : <span className="text-gray-500">None</span>}
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Limitations</Label>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {user?.limitations?.length ? user.limitations.map((lim: string) => (
+                              <Badge key={lim}>{lim}</Badge>
+                            )) : <span className="text-gray-500">None</span>}
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-gray-600">Injuries</Label>
+                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.injuries || 'None'}</p>
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -204,6 +245,111 @@ const Profile = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div>
+                        <Label htmlFor="fitness_level">Fitness Level</Label>
+                        <Select
+                          value={editData.fitness_level}
+                          onValueChange={(value: 'beginner' | 'intermediate' | 'advanced') => setEditData({ ...editData, fitness_level: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="beginner">Beginner</SelectItem>
+                            <SelectItem value="intermediate">Intermediate</SelectItem>
+                            <SelectItem value="advanced">Advanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="experience_years">Experience (Years)</Label>
+                        <Input
+                          id="experience_years"
+                          type="number"
+                          min={0}
+                          value={editData.experience_years}
+                          onChange={e => setEditData({ ...editData, experience_years: Number(e.target.value) })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="workout_frequency">Workout Frequency</Label>
+                        <Select
+                          value={editData.workout_frequency}
+                          onValueChange={(value: string) => setEditData({ ...editData, workout_frequency: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1-2">1-2 days/week</SelectItem>
+                            <SelectItem value="3-4">3-4 days/week</SelectItem>
+                            <SelectItem value="5-6">5-6 days/week</SelectItem>
+                            <SelectItem value="7">Everyday</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="preferred_duration">Preferred Duration</Label>
+                        <Select
+                          value={editData.preferred_duration}
+                          onValueChange={(value: string) => setEditData({ ...editData, preferred_duration: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="15-30">15-30 min</SelectItem>
+                            <SelectItem value="30-45">30-45 min</SelectItem>
+                            <SelectItem value="45-60">45-60 min</SelectItem>
+                            <SelectItem value=">60">60+ min</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Equipment Access</Label>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {['Dumbbells', 'Barbell', 'Kettlebell', 'Resistance Bands', 'Pull-up Bar', 'Bench', 'None'].map(eq => (
+                            <Button
+                              key={eq}
+                              type="button"
+                              variant={editData.equipment_access.includes(eq) ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => {
+                                setEditData(prev => {
+                                  const exists = prev.equipment_access.includes(eq);
+                                  return {
+                                    ...prev,
+                                    equipment_access: exists
+                                      ? prev.equipment_access.filter(e => e !== eq)
+                                      : [...prev.equipment_access, eq]
+                                  };
+                                });
+                              }}
+                            >
+                              {eq}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Limitations</Label>
+                        <Input
+                          value={editData.limitations.join(', ')}
+                          onChange={e => setEditData({ ...editData, limitations: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                          placeholder="e.g. Knee pain, Asthma"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Injuries</Label>
+                        <Input
+                          value={editData.injuries}
+                          onChange={e => setEditData({ ...editData, injuries: e.target.value })}
+                          placeholder="e.g. Shoulder injury"
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -225,7 +371,7 @@ const Profile = () => {
                         <Badge variant="secondary" className="text-sm">
                           {getSubscriptionPlanDisplay()}
                         </Badge>
-                        <Button variant="outline" size="sm">
+                        <Button variant="default" size="sm" onClick={() => toast({ title: 'Upgrade coming soon!' })}>
                           Upgrade Plan
                         </Button>
                       </div>
@@ -313,7 +459,7 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg">
+                    <div className="p-4 bg-gradient-to-r from-accent to-blue-50 rounded-lg">
                       <h4 className="font-medium text-gray-800 mb-2">
                         Current Goal: {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
                       </h4>

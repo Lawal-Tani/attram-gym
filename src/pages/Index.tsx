@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,12 +6,12 @@ import { Target, TrendingUp, Users, Smartphone } from 'lucide-react';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      <div className="relative overflow-hidden bg-slateBlue-700 text-white">
+        <div className="absolute inset-0 bg-black opacity-30"></div>
         <div className="relative container mx-auto px-4 py-16 text-center">
-          <h1 className="text-5xl font-bold mb-6 animate-fade-in">
+          <h1 className="text-5xl font-bold mb-6 animate-fade-in text-accent">
             Attram Gym Assistant
           </h1>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
@@ -20,11 +19,11 @@ const Index = () => {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link to="/login">
-              <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 font-semibold px-8">
+              <Button size="lg" variant="default" className="px-8">
                 Get Started
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-emerald-600 px-8">
+            <Button size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground px-8">
               Learn More
             </Button>
           </div>
@@ -94,14 +93,14 @@ const Index = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gray-900 text-white py-16">
+      <div className="bg-slateBlue-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Fitness Journey?</h2>
-          <p className="text-gray-300 mb-8 max-w-xl mx-auto">
+          <h2 className="text-3xl font-bold mb-4 text-accent">Ready to Transform Your Fitness Journey?</h2>
+          <p className="text-slateBlue-200 mb-8 max-w-xl mx-auto">
             Join thousands of gym members who are already using Attram Gym Assistant to achieve their fitness goals.
           </p>
           <Link to="/login">
-            <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 px-8">
+            <Button size="lg" variant="default" className="px-8">
               Start Your Journey
             </Button>
           </Link>

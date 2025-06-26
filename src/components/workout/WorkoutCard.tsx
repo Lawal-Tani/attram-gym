@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,9 +29,10 @@ interface WorkoutCardProps {
   isToday: boolean;
   isCompleted: boolean;
   onComplete: (workoutPlanId: string, dayTitle: string) => void;
+  onView?: (workoutPlanId: string) => void;
 }
 
-const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted, onComplete }) => {
+const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted, onComplete, onView }) => {
   const getFitnessLevelColor = (level: string) => {
     switch (level) {
       case 'beginner':
@@ -45,6 +45,31 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
+  // Timer state
+  const [timerActive, setTimerActive] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startTimer = () => {
+    setTimerActive(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
+  };
+  const pauseTimer = () => {
+    setTimerActive(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+  const resetTimer = () => {
+    setTimerActive(false);
+    setSeconds(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  // Format seconds to mm:ss
+  const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <Card className={`${isToday ? 'ring-2 ring-emerald-500 bg-emerald-50' : ''} ${isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
@@ -72,20 +97,38 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
               </Badge>
             </div>
           </div>
-          {!isCompleted && (
-            <Button 
-              onClick={() => onComplete(workout.id, workout.title)}
-              className="bg-emerald-500 hover:bg-emerald-600"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Complete
-            </Button>
-          )}
-          {isCompleted && (
-            <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
-              ✓ Completed
-            </Badge>
-          )}
+          <div className="flex flex-col gap-2 items-end">
+            {!isCompleted && (
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => onComplete(workout.id, workout.title)}
+                  className="bg-emerald-500 hover:bg-emerald-600"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Complete
+                </Button>
+                {onView && (
+                  <Button variant="outline" onClick={() => onView(workout.id)}>
+                    View Workout
+                  </Button>
+                )}
+                <Button variant={timerActive ? 'default' : 'outline'} onClick={timerActive ? pauseTimer : startTimer}>
+                  {timerActive ? 'Pause' : 'Start Workout'}
+                </Button>
+              </div>
+            )}
+            {timerActive || seconds > 0 ? (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="font-mono text-lg">{formatTime(seconds)}</span>
+                <Button size="sm" variant="ghost" onClick={resetTimer}>Reset</Button>
+              </div>
+            ) : null}
+            {isCompleted && (
+              <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
+                ✓ Completed
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

@@ -40,9 +40,21 @@ export default {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
+				slateBlue: {
+					50: '#f8fafc',
+					100: '#e0e7ef',
+					200: '#c7d2e5',
+					300: '#a0aecf',
+					400: '#7b93b8',
+					500: '#475569',
+					600: '#334155',
+					700: '#273043',
+					800: '#1e2533',
+					900: '#131a23',
+				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: '#475569',
+					foreground: '#f8fafc'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',

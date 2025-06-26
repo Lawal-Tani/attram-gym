@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle, Trophy, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -14,6 +15,11 @@ const Dashboard = () => {
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [achievements, setAchievements] = useState<any[]>([]);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
+  const [progressData, setProgressData] = useState<any[]>([]);
+  const [typeData, setTypeData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchWorkoutPlan = async () => {
@@ -69,6 +75,27 @@ const Dashboard = () => {
     };
     fetchWorkoutPlan();
   }, [user]);
+
+  useEffect(() => {
+    async function fetchGamification() {
+      if (!user?.id) return;
+      // Fetch stats
+      const { data: statsData } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      setStats(statsData);
+      // Fetch achievements
+      const { data: achievementsData } = await (supabase as any)
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('unlocked', true);
+      setAchievements(achievementsData || []);
+    }
+    fetchGamification();
+  }, [user?.id]);
 
   const completionRate = Math.round((completedWorkouts.length / workoutPlan.length) * 100);
 
@@ -192,6 +219,50 @@ const Dashboard = () => {
           </Card>
         )}
 
+        {/* Gamification Section */}
+        <div className="mb-12">
+          <Card className="shadow-xl bg-gradient-to-br from-yellow-50 to-emerald-50 dark:from-yellow-900 dark:to-emerald-900">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-yellow-500" />
+                Achievements & Streaks
+              </CardTitle>
+              <CardDescription>Track your progress and unlock new milestones!</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-8 items-center mb-6">
+                <div className="flex flex-col items-center">
+                  <Flame className="h-8 w-8 text-orange-500 mb-1" />
+                  <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
+                  <span className="text-xs text-gray-500">Current Streak</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Flame className="h-8 w-8 text-red-500 mb-1" />
+                  <span className="font-bold text-lg">{stats?.best_streak || 0}</span>
+                  <span className="text-xs text-gray-500">Best Streak</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Trophy className="h-8 w-8 text-yellow-500 mb-1" />
+                  <span className="font-bold text-lg">{stats?.total_workouts || 0}</span>
+                  <span className="text-xs text-gray-500">Total Workouts</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Unlocked Achievements</h4>
+                <div className="flex flex-wrap gap-3">
+                  {achievements.length === 0 && <span className="text-gray-400">No achievements yet.</span>}
+                  {achievements.map(a => (
+                    <Badge key={a.achievement_id} variant="default" className="flex items-center gap-1 px-3 py-2 text-sm">
+                      <Trophy className="h-4 w-4 text-yellow-500 mr-1" />
+                      {a.achievement_id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-10">
           {/* Weekly Progress */}
           <Card className="lg:col-span-2 shadow-lg bg-white/80 dark:bg-gray-900/80">
@@ -258,15 +329,15 @@ const Dashboard = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Current Streak</span>
-                  <Badge variant="secondary">7 days</Badge>
+                  <Badge variant="secondary">{stats?.current_streak || 0} days</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Best Streak</span>
-                  <Badge variant="secondary">14 days</Badge>
+                  <Badge variant="secondary">{stats?.best_streak || 0} days</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">This Month</span>
-                  <Badge variant="secondary">18 workouts</Badge>
+                  <Badge variant="secondary">{stats?.total_workouts || 0} workouts</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Member Since</span>
