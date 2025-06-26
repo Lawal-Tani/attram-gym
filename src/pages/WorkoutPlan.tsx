@@ -165,26 +165,22 @@ const WorkoutPlan = () => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <NavigationBar />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-2 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Your Workout Plan
           </h1>
-          <div className="flex items-center gap-4 mb-4">
-            <span className="font-semibold text-gray-700">Difficulty:</span>
-            <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <span className="font-semibold text-muted-foreground">Difficulty:</span>
+            <div className="flex flex-wrap gap-2">
               {['beginner', 'intermediate', 'advanced'].map(level => (
                 <button
                   key={level}
                   onClick={() => handleLevelChange(level as 'beginner' | 'intermediate' | 'advanced')}
                   className={`px-4 py-2 rounded-full flex items-center gap-1 font-semibold border transition-all
                     ${selectedLevel === level
-                      ? level === 'beginner'
-                        ? 'bg-green-500 text-white border-green-600 shadow-lg'
-                        : level === 'intermediate'
-                          ? 'bg-yellow-400 text-white border-yellow-500 shadow-lg'
-                          : 'bg-red-500 text-white border-red-600 shadow-lg'
-                      : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}
+                      ? 'bg-accent text-white border-accent shadow-lg'
+                      : 'bg-muted text-muted-foreground border-muted hover:bg-accent/20'}
                   `}
                 >
                   {level === 'beginner' && <Dumbbell className="w-4 h-4 mr-1" />}
@@ -195,17 +191,17 @@ const WorkoutPlan = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4 text-gray-600">
+          <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
             <span>Today is {currentDay}</span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge 
                 variant="outline" 
-                className={`capitalize ${getFitnessLevelColor(selectedLevel)}`}
+                className={`capitalize bg-accent/20 text-accent border-accent`}
               >
                 <Target className="h-3 w-3 mr-1" />
                 {selectedLevel} level
               </Badge>
-              <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
+              <Badge variant="outline" className="text-accent border-accent bg-accent/20">
                 {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'}
               </Badge>
             </div>

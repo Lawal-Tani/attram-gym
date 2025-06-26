@@ -95,13 +95,13 @@ const Profile = () => {
     <div className="min-h-screen bg-background text-foreground">
       <NavigationBar />
 
-      <div className="container mx-auto px-4 py-8 pb-28">
+      <div className="container mx-auto px-2 sm:px-2 py-8 pb-28">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Your Profile
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Manage your account information and fitness preferences
             </p>
           </div>
@@ -110,7 +110,7 @@ const Profile = () => {
             {/* Left Column */}
             <div className="space-y-6">
               {/* Profile Information */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
@@ -122,6 +122,7 @@ const Profile = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setIsEditing(true)}
+                        className="border-accent text-accent"
                       >
                         <Edit2 className="h-4 w-4 mr-2" />
                         Edit
@@ -131,7 +132,7 @@ const Profile = () => {
                         <Button
                           size="sm"
                           onClick={handleSave}
-                          className="bg-accent hover:bg-accent-foreground"
+                          className="bg-accent text-white hover:bg-accent/80"
                         >
                           <Save className="h-4 w-4 mr-2" />
                           Save
@@ -140,6 +141,7 @@ const Profile = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setIsEditing(false)}
+                          className="border-muted-foreground text-muted-foreground"
                         >
                           <X className="h-4 w-4 mr-2" />
                           Cancel
@@ -153,67 +155,67 @@ const Profile = () => {
                     <>
                       <div className="grid grid-cols-1 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Full Name</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.name}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.name}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Email</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{session?.user?.email}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{session?.user?.email}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Fitness Goal</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">Fitness Goal</Label>
                           <div className="mt-1">
-                            <Badge variant="secondary" className="text-sm">
+                            <Badge variant="secondary" className="text-sm bg-accent text-white">
                               {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
                             </Badge>
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Account Type</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">Account Type</Label>
                           <div className="mt-1">
                             <Badge
                               variant={user?.role === 'admin' ? 'default' : 'secondary'}
-                              className="text-sm capitalize"
+                              className="text-sm capitalize bg-accent text-white"
                             >
                               {user?.role}
                             </Badge>
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Fitness Level</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.fitness_level}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Fitness Level</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.fitness_level}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Experience (Years)</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.experience_years}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Experience (Years)</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.experience_years}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Workout Frequency</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.workout_frequency}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Workout Frequency</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.workout_frequency}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Preferred Duration</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.preferred_duration}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Preferred Duration</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.preferred_duration}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Equipment Access</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">Equipment Access</Label>
                           <div className="flex flex-wrap gap-2 mt-1">
                             {user?.equipment_access?.length ? user.equipment_access.map((eq: string) => (
-                              <Badge key={eq}>{eq}</Badge>
-                            )) : <span className="text-gray-500">None</span>}
+                              <Badge key={eq} className="bg-accent text-white">{eq}</Badge>
+                            )) : <span className="text-muted-foreground">None</span>}
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Limitations</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">Limitations</Label>
                           <div className="flex flex-wrap gap-2 mt-1">
                             {user?.limitations?.length ? user.limitations.map((lim: string) => (
-                              <Badge key={lim}>{lim}</Badge>
-                            )) : <span className="text-gray-500">None</span>}
+                              <Badge key={lim} className="bg-accent text-white">{lim}</Badge>
+                            )) : <span className="text-muted-foreground">None</span>}
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-600">Injuries</Label>
-                          <p className="text-lg font-medium text-gray-800 mt-1">{user?.injuries || 'None'}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">Injuries</Label>
+                          <p className="text-lg font-medium text-foreground mt-1">{user?.injuries || 'None'}</p>
                         </div>
                       </div>
                     </>
@@ -356,33 +358,33 @@ const Profile = () => {
               </Card>
 
               {/* Subscription Information */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-purple-500" />
+                    <Crown className="h-5 w-5 text-accent" />
                     Subscription Plan
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Current Plan</Label>
+                      <Label className="text-sm font-medium text-muted-foreground">Current Plan</Label>
                       <div className="mt-1 flex items-center gap-2">
-                        <Badge variant="secondary" className="text-sm">
+                        <Badge variant="secondary" className="text-sm bg-accent text-white">
                           {getSubscriptionPlanDisplay()}
                         </Badge>
-                        <Button variant="default" size="sm" onClick={() => toast({ title: 'Upgrade coming soon!' })}>
+                        <Button variant="default" size="sm" className="bg-accent text-white" onClick={() => toast({ title: 'Upgrade coming soon!' })}>
                           Upgrade Plan
                         </Button>
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Billing Cycle</Label>
-                      <p className="text-lg font-medium text-gray-800 mt-1">Monthly</p>
+                      <Label className="text-sm font-medium text-muted-foreground">Billing Cycle</Label>
+                      <p className="text-lg font-medium text-foreground mt-1">Monthly</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Next Billing Date</Label>
-                      <p className="text-lg font-medium text-gray-800 mt-1">
+                      <Label className="text-sm font-medium text-muted-foreground">Next Billing Date</Label>
+                      <p className="text-lg font-medium text-foreground mt-1">
                         {user?.membership_expiry ? new Date(user.membership_expiry).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
@@ -394,31 +396,31 @@ const Profile = () => {
             {/* Right Column */}
             <div className="space-y-6">
               {/* Membership Info */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-blue-500" />
+                    <Calendar className="h-5 w-5 text-accent" />
                     Membership Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Start Date</Label>
-                      <p className="text-lg font-medium text-gray-800 mt-1">
+                      <Label className="text-sm font-medium text-muted-foreground">Start Date</Label>
+                      <p className="text-lg font-medium text-foreground mt-1">
                         {user?.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Days as Member</Label>
-                      <p className="text-lg font-medium text-gray-800 mt-1">{membershipDays} days</p>
+                      <Label className="text-sm font-medium text-muted-foreground">Days as Member</Label>
+                      <p className="text-lg font-medium text-foreground mt-1">{membershipDays} days</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Days Until Expiry</Label>
+                      <Label className="text-sm font-medium text-muted-foreground">Days Until Expiry</Label>
                       <div className="mt-1">
                         <Badge
                           variant={daysUntilExpiry <= 30 ? "destructive" : "secondary"}
-                          className="text-sm"
+                          className={`text-sm ${daysUntilExpiry <= 30 ? 'bg-red-600 text-white' : 'bg-accent text-white'}`}
                         >
                           {daysUntilExpiry} days
                         </Badge>
@@ -427,17 +429,17 @@ const Profile = () => {
                   </div>
 
                   {daysUntilExpiry <= 30 && (
-                    <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-center gap-2 text-red-700 mb-2">
+                    <div className="mt-6 p-4 bg-red-900 border border-red-700 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-200 mb-2">
                         <Clock className="h-5 w-5" />
                         <span className="font-medium">Membership Expiring Soon</span>
                       </div>
-                      <p className="text-red-600 text-sm mb-3">
+                      <p className="text-red-200 text-sm mb-3">
                         Your membership expires in {daysUntilExpiry} days. Please renew to continue accessing all features.
                       </p>
                       <Button
                         variant="outline"
-                        className="border-red-300 text-red-700 hover:bg-red-100"
+                        className="border-red-400 text-red-200 hover:bg-red-800"
                       >
                         Renew Membership
                       </Button>
@@ -447,23 +449,23 @@ const Profile = () => {
               </Card>
 
               {/* Fitness Goal Info */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-purple-500" />
+                    <Target className="h-5 w-5 text-accent" />
                     Your Fitness Journey
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-muted-foreground">
                     Information about your current fitness goal and recommendations
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 bg-gradient-to-r from-accent to-blue-50 rounded-lg">
-                      <h4 className="font-medium text-gray-800 mb-2">
+                    <div className="p-4 bg-accent/20 rounded-lg">
+                      <h4 className="font-medium text-foreground mb-2">
                         Current Goal: {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {user?.goal === 'weight_loss'
                           ? 'Focus on high-intensity workouts, cardio, and maintaining a caloric deficit for optimal weight loss results.'
                           : 'Emphasize strength training, progressive overload, and adequate nutrition to build lean muscle mass effectively.'}

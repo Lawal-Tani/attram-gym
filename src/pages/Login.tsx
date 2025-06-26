@@ -194,22 +194,22 @@ const Login = () => {
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Dumbbell className="h-8 w-8 text-emerald-600 mr-2" />
-            <h1 className="text-3xl font-bold text-gray-900">FitTracker</h1>
+            <Dumbbell className="h-8 w-8 text-accent mr-2" />
+            <h1 className="text-3xl font-bold text-foreground">FitTracker</h1>
           </div>
-          <p className="text-gray-600">Your personal fitness companion</p>
+          <p className="text-muted-foreground">Your personal fitness companion</p>
         </div>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground">Welcome</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Sign in to your account or create a new one to get started
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 bg-muted">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
@@ -217,7 +217,7 @@ const Login = () => {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-muted-foreground">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -226,10 +226,11 @@ const Login = () => {
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
                       disabled={isSubmitting || loading}
+                      className="bg-card text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-muted-foreground">Password</Label>
                     <Input
                       id="password"
                       type="password"
@@ -238,9 +239,10 @@ const Login = () => {
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
                       disabled={isSubmitting || loading}
+                      className="bg-card text-foreground"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
+                  <Button type="submit" className="w-full bg-accent text-white" disabled={isSubmitting || loading}>
                     {isSubmitting ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>
@@ -250,7 +252,7 @@ const Login = () => {
                 <form onSubmit={handleSignup} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Label htmlFor="signup-name" className="text-muted-foreground">Full Name</Label>
                       <Input
                         id="signup-name"
                         placeholder="Enter your full name"
@@ -258,10 +260,11 @@ const Login = () => {
                         onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                         required
                         disabled={isSubmitting || loading}
+                        className="bg-card text-foreground"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
+                      <Label htmlFor="signup-email" className="text-muted-foreground">Email</Label>
                       <Input
                         id="signup-email"
                         type="email"
@@ -270,13 +273,14 @@ const Login = () => {
                         onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                         required
                         disabled={isSubmitting || loading}
+                        className="bg-card text-foreground"
                       />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
+                      <Label htmlFor="signup-password" className="text-muted-foreground">Password</Label>
                       <Input
                         id="signup-password"
                         type="password"
@@ -285,10 +289,11 @@ const Login = () => {
                         onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                         required
                         disabled={isSubmitting || loading}
+                        className="bg-card text-foreground"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Label htmlFor="confirm-password" className="text-muted-foreground">Confirm Password</Label>
                       <Input
                         id="confirm-password"
                         type="password"
@@ -297,19 +302,20 @@ const Login = () => {
                         onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                         required
                         disabled={isSubmitting || loading}
+                        className="bg-card text-foreground"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Fitness Goal</Label>
+                    <Label className="text-muted-foreground">Fitness Goal</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         type="button"
                         variant={signupData.goal === 'weight_loss' ? 'default' : 'outline'}
                         onClick={() => setSignupData({ ...signupData, goal: 'weight_loss' })}
                         disabled={isSubmitting || loading}
-                        className="w-full"
+                        className="w-full bg-card text-foreground"
                       >
                         Weight Loss
                       </Button>
@@ -318,7 +324,7 @@ const Login = () => {
                         variant={signupData.goal === 'muscle_gain' ? 'default' : 'outline'}
                         onClick={() => setSignupData({ ...signupData, goal: 'muscle_gain' })}
                         disabled={isSubmitting || loading}
-                        className="w-full"
+                        className="w-full bg-card text-foreground"
                       >
                         Muscle Gain
                       </Button>
@@ -326,7 +332,7 @@ const Login = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <Label>Choose Your Plan</Label>
+                    <Label className="text-muted-foreground">Choose Your Plan</Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {subscriptionPlans.map((plan) => {
                         const IconComponent = plan.icon;
@@ -356,7 +362,7 @@ const Login = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
+                  <Button type="submit" className="w-full bg-accent text-white" disabled={isSubmitting || loading}>
                     {isSubmitting ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>

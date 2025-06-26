@@ -145,20 +145,20 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-8 mb-12">
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-gradient-to-br from-emerald-200 to-blue-100 dark:from-emerald-900 dark:to-blue-900">
+          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold text-emerald-800 dark:text-emerald-200">This Week</CardTitle>
               <Target className="h-5 w-5 text-emerald-500" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">{completionRate}%</div>
-              <Progress value={completionRate} className="h-2 my-2" />
+              <Progress value={completionRate} className="h-2 my-2 bg-accent" />
               <p className="text-xs text-muted-foreground">
                 {completedWorkouts.length} of {workoutPlan.length} workouts
               </p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-gradient-to-br from-blue-200 to-emerald-100 dark:from-blue-900 dark:to-emerald-900">
+          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold text-blue-800 dark:text-blue-200">Streak</CardTitle>
               <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -168,7 +168,7 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground">days active</p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-gradient-to-br from-emerald-100 to-blue-50 dark:from-emerald-800 dark:to-blue-800">
+          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold text-emerald-800 dark:text-emerald-200">Goal</CardTitle>
               <Target className="h-5 w-5 text-emerald-500" />
@@ -180,7 +180,7 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground">current focus</p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-gradient-to-br from-blue-100 to-emerald-50 dark:from-blue-800 dark:to-emerald-800">
+          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold text-blue-800 dark:text-blue-200">Membership</CardTitle>
               <Calendar className="h-5 w-5 text-blue-500" />
@@ -221,7 +221,7 @@ const Dashboard = () => {
 
         {/* Gamification Section */}
         <div className="mb-12">
-          <Card className="shadow-xl bg-gradient-to-br from-yellow-50 to-emerald-50 dark:from-yellow-900 dark:to-emerald-900">
+          <Card className="shadow-xl bg-background">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-yellow-500" />
@@ -287,7 +287,7 @@ const Dashboard = () => {
           </Card>
           {/* Quick Stats & Motivational Card */}
           <div className="space-y-8">
-            <Card className="shadow-lg bg-gradient-to-br from-emerald-100 to-blue-50 dark:from-emerald-900 dark:to-blue-900">
+            <Card className="shadow-lg bg-background">
               <CardHeader>
                 <CardTitle className="text-lg font-bold text-blue-800 dark:text-blue-200">Quick Stats</CardTitle>
               </CardHeader>
@@ -310,7 +310,7 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card className="shadow-lg bg-gradient-to-br from-blue-100 to-emerald-50 dark:from-blue-900 dark:to-emerald-900">
+            <Card className="shadow-lg bg-background">
               <CardHeader>
                 <CardTitle className="text-lg font-bold text-emerald-700 dark:text-emerald-200">💡 Today's Motivation</CardTitle>
               </CardHeader>
