@@ -12,7 +12,13 @@ interface Exercise {
   reps: string;
   rest_time: string;
   order_index: number;
-  video_url?: string;
+  equipment?: string;
+  video?: {
+    video_url: string;
+    thumbnail_url?: string;
+    duration_seconds?: number;
+    description?: string;
+  };
 }
 
 interface WorkoutPlan {
@@ -74,35 +80,40 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
   return (
     <Card className={`${isToday ? 'ring-2 ring-accent bg-accent/20' : ''} ${isCompleted ? 'bg-accent/10 border-green-200' : ''}`}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1 min-w-0">
             <CardTitle className="flex items-center gap-2">
               {workout.day_of_week}
-              {isToday && <Badge className="bg-emerald-500">Today</Badge>}
+              {isToday && <Badge className="bg-emerald-500 text-white">Today</Badge>}
               {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
             </CardTitle>
-            <CardDescription className="text-lg font-medium text-gray-700 mb-2">
+            <CardDescription className="text-lg font-medium text-foreground mb-2 truncate">
               {workout.title}
             </CardDescription>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Badge 
                 variant="outline" 
-                className={`capitalize ${getFitnessLevelColor(workout.fitness_level)}`}
+                className={`capitalize border-2 ${
+                  workout.fitness_level === 'beginner' ? 'bg-green-700 text-green-100 border-green-700' :
+                  workout.fitness_level === 'intermediate' ? 'bg-yellow-500 text-yellow-900 border-yellow-500' :
+                  workout.fitness_level === 'advanced' ? 'bg-red-700 text-red-100 border-red-700' :
+                  'bg-muted text-muted-foreground border-muted'
+                }`}
               >
                 <Target className="h-3 w-3 mr-1" />
                 {workout.fitness_level}
               </Badge>
-              <Badge variant="outline" className="text-blue-400 border-blue-300 bg-accent/10">
+              <Badge variant="outline" className="text-accent border-accent bg-accent/10">
                 {workout.goal_type.replace('_', ' ')}
               </Badge>
             </div>
           </div>
-          <div className="flex flex-col gap-2 items-end">
+          <div className="flex flex-col gap-2 items-end w-full md:w-auto">
             {!isCompleted && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 justify-end">
                 <Button 
                   onClick={() => onComplete(workout.id, workout.title)}
-                  className="bg-emerald-500 hover:bg-emerald-600"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Complete

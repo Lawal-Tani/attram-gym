@@ -9,6 +9,15 @@ import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle, Trophy
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 
+const ALL_ACHIEVEMENTS = [
+  { id: 'first_workout', label: 'First Workout', icon: Trophy },
+  { id: 'streak_7', label: '7-Day Streak', icon: Flame },
+  { id: 'streak_30', label: '30-Day Streak', icon: Flame },
+  { id: 'workouts_50', label: '50 Workouts', icon: Trophy },
+  { id: 'workouts_100', label: '100 Workouts', icon: Trophy },
+  { id: 'goal_completed', label: 'Goal Completed', icon: Target },
+];
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<any[]>([]);
@@ -248,14 +257,19 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                {achievements.length === 0 && <span className="text-gray-400 col-span-4">No achievements yet.</span>}
-                {achievements.map(a => (
-                  <div key={a.achievement_id} className="flex flex-col items-center bg-accent/10 rounded-lg p-4 shadow">
-                    <Trophy className="h-8 w-8 text-accent mb-2 animate-bounce" />
-                    <span className="font-bold text-accent text-center">{a.achievement_id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                    <span className="text-xs text-muted-foreground mt-1">Unlocked!</span>
-                  </div>
-                ))}
+                {ALL_ACHIEVEMENTS.map(a => {
+                  const unlocked = achievements.some(ua => ua.achievement_id === a.id);
+                  return (
+                    <div
+                      key={a.id}
+                      className={`flex flex-col items-center rounded-lg p-4 shadow transition-all ${unlocked ? 'bg-accent/10' : 'bg-muted opacity-50 grayscale'}`}
+                    >
+                      <a.icon className={`h-8 w-8 mb-2 ${unlocked ? 'text-accent animate-bounce' : 'text-muted-foreground'}`} />
+                      <span className={`font-bold text-center ${unlocked ? 'text-accent' : 'text-muted-foreground'}`}>{a.label}</span>
+                      <span className="text-xs text-muted-foreground mt-1">{unlocked ? 'Unlocked!' : 'Locked'}</span>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

@@ -161,6 +161,14 @@ const WorkoutPlan = () => {
     return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
   });
 
+  // Categorize workouts
+  const bodyweightWorkouts = sortedWorkoutPlans.filter(w =>
+    w.exercises.every((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() === 'bodyweight')
+  );
+  const equipmentWorkouts = sortedWorkoutPlans.filter(w =>
+    w.exercises.some((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() !== 'bodyweight')
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <NavigationBar />
@@ -209,21 +217,50 @@ const WorkoutPlan = () => {
         </div>
 
         <div className="grid gap-6">
-          {sortedWorkoutPlans.map((workout) => {
-            const isToday = workout.day_of_week === currentDay;
-            const isCompleted = isWorkoutCompleted(workout.id);
-            
-            return (
-              <WorkoutCard
-                key={workout.id}
-                workout={workout}
-                isToday={isToday}
-                isCompleted={isCompleted}
-                onComplete={markWorkoutComplete}
-                onView={onViewWorkout}
-              />
-            );
-          })}
+          {/* Bodyweight Workouts Section */}
+          {bodyweightWorkouts.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-emerald-400">Bodyweight Workouts</h2>
+              <div className="grid gap-6">
+                {bodyweightWorkouts.map((workout) => {
+                  const isToday = workout.day_of_week === currentDay;
+                  const isCompleted = isWorkoutCompleted(workout.id);
+                  return (
+                    <WorkoutCard
+                      key={workout.id}
+                      workout={workout}
+                      isToday={isToday}
+                      isCompleted={isCompleted}
+                      onComplete={markWorkoutComplete}
+                      onView={onViewWorkout}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* Equipment Workouts Section */}
+          {equipmentWorkouts.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-blue-400">Equipment Workouts</h2>
+              <div className="grid gap-6">
+                {equipmentWorkouts.map((workout) => {
+                  const isToday = workout.day_of_week === currentDay;
+                  const isCompleted = isWorkoutCompleted(workout.id);
+                  return (
+                    <WorkoutCard
+                      key={workout.id}
+                      workout={workout}
+                      isToday={isToday}
+                      isCompleted={isCompleted}
+                      onComplete={markWorkoutComplete}
+                      onView={onViewWorkout}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <WorkoutTips />

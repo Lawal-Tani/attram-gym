@@ -24,6 +24,15 @@ const chartConfig = {
   },
 };
 
+const ALL_ACHIEVEMENTS = [
+  { id: 'first_workout', label: 'First Workout', icon: Award },
+  { id: 'streak_7', label: '7-Day Streak', icon: TrendingUp },
+  { id: 'streak_30', label: '30-Day Streak', icon: TrendingUp },
+  { id: 'workouts_50', label: '50 Workouts', icon: Dumbbell },
+  { id: 'workouts_100', label: '100 Workouts', icon: Dumbbell },
+  { id: 'goal_completed', label: 'Goal Completed', icon: Target },
+];
+
 const ProgressPage = () => {
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -48,6 +57,10 @@ const ProgressPage = () => {
   const [errorStrength, setErrorStrength] = useState<string | null>(null);
   const [progressData, setProgressData] = useState<any[]>([]);
   const [typeData, setTypeData] = useState<any[]>([]);
+  const [achievements] = useState([
+    { achievement_id: 'first_workout' },
+    { achievement_id: 'streak_7' },
+  ]);
 
   useEffect(() => {
     if (!user) return;
@@ -533,6 +546,35 @@ const ProgressPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Achievements Section */}
+        <Card className="shadow-lg bg-background mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-yellow-500" />
+              Achievements
+            </CardTitle>
+            <CardDescription>Unlock achievements as you progress!</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+              {ALL_ACHIEVEMENTS.map(a => {
+                // Assume you have achievements from Supabase in a variable called achievements
+                const unlocked = (achievements || []).some(ua => ua.achievement_id === a.id);
+                return (
+                  <div
+                    key={a.id}
+                    className={`flex flex-col items-center rounded-lg p-4 shadow transition-all ${unlocked ? 'bg-accent/10' : 'bg-muted opacity-50 grayscale'}`}
+                  >
+                    <a.icon className={`h-8 w-8 mb-2 ${unlocked ? 'text-accent animate-bounce' : 'text-muted-foreground'}`} />
+                    <span className={`font-bold text-center ${unlocked ? 'text-accent' : 'text-muted-foreground'}`}>{a.label}</span>
+                    <span className="text-xs text-muted-foreground mt-1">{unlocked ? 'Unlocked!' : 'Locked'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <NavigationBar />

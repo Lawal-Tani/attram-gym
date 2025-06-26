@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +11,13 @@ interface Exercise {
   reps: string;
   rest_time: string;
   order_index: number;
-  video_url?: string;
+  equipment?: string;
+  video?: {
+    video_url: string;
+    thumbnail_url?: string;
+    duration_seconds?: number;
+    description?: string;
+  };
 }
 
 interface ExerciseListProps {
@@ -54,11 +59,11 @@ const ExerciseList: React.FC<ExerciseListProps> = ({ exercises }) => {
                 </div>
               </div>
               
-              {exercise.video_url && (
+              {exercise.video?.video_url && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => openVideo(exercise.video_url!)}
+                  onClick={() => openVideo(exercise.video.video_url)}
                   className="ml-4"
                 >
                   <Play className="w-4 h-4 mr-2" />
