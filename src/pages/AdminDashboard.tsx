@@ -41,13 +41,13 @@ const AdminDashboard = () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('users')
-          .select('id, name, goal, role, membership_expiry, start_date');
+          .select('id, name, email, goal, role, membership_expiry, start_date');
         if (fetchError) throw fetchError;
         setMembers(
           data.map((u: any) => ({
             id: u.id,
             name: u.name,
-            email: '', // Email not in schema, add if available
+            email: u.email,
             goal: u.goal,
             membershipExpiry: u.membership_expiry,
             startDate: u.start_date,

@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle, Trophy, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -247,17 +247,15 @@ const Dashboard = () => {
                   <span className="text-xs text-gray-500">Total Workouts</span>
                 </div>
               </div>
-              <div>
-                <h4 className="font-semibold mb-2">Unlocked Achievements</h4>
-                <div className="flex flex-wrap gap-3">
-                  {achievements.length === 0 && <span className="text-gray-400">No achievements yet.</span>}
-                  {achievements.map(a => (
-                    <Badge key={a.achievement_id} variant="default" className="flex items-center gap-1 px-3 py-2 text-sm">
-                      <Trophy className="h-4 w-4 text-yellow-500 mr-1" />
-                      {a.achievement_id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                {achievements.length === 0 && <span className="text-gray-400 col-span-4">No achievements yet.</span>}
+                {achievements.map(a => (
+                  <div key={a.achievement_id} className="flex flex-col items-center bg-accent/10 rounded-lg p-4 shadow">
+                    <Trophy className="h-8 w-8 text-accent mb-2 animate-bounce" />
+                    <span className="font-bold text-accent text-center">{a.achievement_id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                    <span className="text-xs text-muted-foreground mt-1">Unlocked!</span>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -265,59 +263,26 @@ const Dashboard = () => {
 
         <div className="grid lg:grid-cols-3 gap-10">
           {/* Weekly Progress */}
-          <Card className="lg:col-span-2 shadow-lg bg-white/80 dark:bg-gray-900/80">
+          <Card className="shadow-xl bg-background border border-accent/30">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-emerald-700 dark:text-emerald-300">This Week's Progress</CardTitle>
-              <CardDescription className="text-blue-900 dark:text-blue-200">
-                Your {user?.goal?.replace('_', ' ')} workout plan
-              </CardDescription>
+              <CardTitle>Progress Over Time</CardTitle>
+              <CardDescription>Your workout progress visualized</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Weekly Completion</span>
-                  <span>{completionRate}%</span>
-                </div>
-                <Progress value={completionRate} className="h-2" />
-              </div>
-              <div className="space-y-4">
-                {workoutPlan.map((workout) => (
-                  <div key={workout.day} className="flex items-center justify-between p-4 border rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900 transition-colors shadow-sm">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-sm font-medium text-muted-foreground w-20">
-                          {workout.day}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-emerald-700 dark:text-emerald-200">{workout.workout}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {workout.exercises.slice(0, 2).join(', ')}
-                            {workout.exercises.length > 2 && '...'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant={completedWorkouts.includes(workout.day) ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => toggleWorkoutCompletion(workout.day)}
-                      className={completedWorkouts.includes(workout.day) ? "bg-green-500 hover:bg-green-600" : ""}
-                    >
-                      {completedWorkouts.includes(workout.day) ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Done
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-4 h-4 mr-2" />
-                          Mark Done
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+            <CardContent style={{ height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={progressData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#475569" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#475569" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" fontSize={12} stroke="#cbd5e1"/>
+                  <YAxis fontSize={12} stroke="#cbd5e1"/>
+                  <RechartsTooltip contentStyle={{ background: '#22223a', border: 'none', color: '#f8fafc' }}/>
+                  <Area type="monotone" dataKey="weight" stroke="#475569" fill="url(#colorProgress)" name="Weight" strokeWidth={3} dot={false} />
+                </AreaChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
           {/* Quick Stats & Motivational Card */}

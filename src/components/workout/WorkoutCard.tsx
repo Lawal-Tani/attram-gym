@@ -72,7 +72,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
   const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <Card className={`${isToday ? 'ring-2 ring-emerald-500 bg-emerald-50' : ''} ${isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
+    <Card className={`${isToday ? 'ring-2 ring-accent bg-accent/20' : ''} ${isCompleted ? 'bg-accent/10 border-green-200' : ''}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -92,7 +92,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
                 <Target className="h-3 w-3 mr-1" />
                 {workout.fitness_level}
               </Badge>
-              <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
+              <Badge variant="outline" className="text-blue-400 border-blue-300 bg-accent/10">
                 {workout.goal_type.replace('_', ' ')}
               </Badge>
             </div>
@@ -124,7 +124,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
               </div>
             ) : null}
             {isCompleted && (
-              <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
+              <Badge variant="outline" className="text-green-400 border-green-700 bg-accent/10">
                 ✓ Completed
               </Badge>
             )}

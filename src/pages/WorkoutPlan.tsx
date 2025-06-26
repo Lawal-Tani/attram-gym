@@ -162,7 +162,7 @@ const WorkoutPlan = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <NavigationBar />
       
       <div className="container mx-auto px-4 py-8">

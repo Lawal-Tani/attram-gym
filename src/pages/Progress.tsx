@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { Calendar, TrendingUp, Award, Target, Dumbbell, Clock } from 'lucide-react';
 import NavigationBar from '@/components/NavigationBar';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +46,8 @@ const ProgressPage = () => {
   const [errorWeekly, setErrorWeekly] = useState<string | null>(null);
   const [loadingStrength, setLoadingStrength] = useState(true);
   const [errorStrength, setErrorStrength] = useState<string | null>(null);
+  const [progressData, setProgressData] = useState<any[]>([]);
+  const [typeData, setTypeData] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -219,6 +221,28 @@ const ProgressPage = () => {
     fetchStats();
   }, [user]);
 
+  useEffect(() => {
+    async function fetchCharts() {
+      if (!user?.id) return;
+      const { data: progressEntries } = await supabase
+        .from('progress_entries')
+        .select('date, weight, duration_minutes, workout_type')
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+      setProgressData((progressEntries || []).map((e: any) => ({
+        date: e.date,
+        weight: e.weight || 0,
+        duration: e.duration_minutes || 0
+      })));
+      const typeCounts: Record<string, number> = {};
+      (progressEntries || []).forEach((e: any) => {
+        if (e.workout_type) typeCounts[e.workout_type] = (typeCounts[e.workout_type] || 0) + 1;
+      });
+      setTypeData(Object.entries(typeCounts).map(([type, value]) => ({ type, value })));
+    }
+    fetchCharts();
+  }, [user?.id]);
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
 
@@ -363,6 +387,45 @@ const ProgressPage = () => {
                 )}
               </CardContent>
             </Card>
+
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {/* Progress Over Time Line Chart */}
+              <Card className="shadow-lg bg-background border border-accent/30">
+                <CardHeader>
+                  <CardTitle>Progress Over Time</CardTitle>
+                </CardHeader>
+                <CardContent style={{ height: 250 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={progressData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <XAxis dataKey="date" fontSize={12} stroke="#cbd5e1" />
+                      <YAxis fontSize={12} stroke="#cbd5e1" />
+                      <Tooltip contentStyle={{ background: '#22223a', border: 'none', color: '#f8fafc' }}/>
+                      <Line type="monotone" dataKey="weight" stroke="#475569" name="Weight" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="duration" stroke="#10b981" name="Duration (min)" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              {/* Workout Type Distribution Pie Chart */}
+              <Card className="shadow-lg bg-background border border-accent/30">
+                <CardHeader>
+                  <CardTitle>Workout Type Distribution</CardTitle>
+                </CardHeader>
+                <CardContent style={{ height: 250 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={typeData} dataKey="value" nameKey="type" cx="50%" cy="50%" outerRadius={70} label>
+                        {typeData.map((entry, idx) => (
+                          <Cell key={`cell-${idx}`} fill={["#475569", "#6366f1", "#f59e42", "#f43f5e"][idx % 4]} />
+                        ))}
+                      </Pie>
+                      <Legend />
+                      <Tooltip contentStyle={{ background: '#22223a', border: 'none', color: '#f8fafc' }}/>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="strength" className="space-y-6">
