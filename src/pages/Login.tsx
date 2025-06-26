@@ -315,7 +315,7 @@ const Login = () => {
                         variant={signupData.goal === 'weight_loss' ? 'default' : 'outline'}
                         onClick={() => setSignupData({ ...signupData, goal: 'weight_loss' })}
                         disabled={isSubmitting || loading}
-                        className="w-full bg-card text-foreground"
+                        className={`w-full ${signupData.goal === 'weight_loss' ? 'bg-accent text-white' : 'bg-card text-foreground'} border-accent`}
                       >
                         Weight Loss
                       </Button>
@@ -324,7 +324,7 @@ const Login = () => {
                         variant={signupData.goal === 'muscle_gain' ? 'default' : 'outline'}
                         onClick={() => setSignupData({ ...signupData, goal: 'muscle_gain' })}
                         disabled={isSubmitting || loading}
-                        className="w-full bg-card text-foreground"
+                        className={`w-full ${signupData.goal === 'muscle_gain' ? 'bg-accent text-white' : 'bg-card text-foreground'} border-accent`}
                       >
                         Muscle Gain
                       </Button>

@@ -119,7 +119,13 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
                   Complete
                 </Button>
                 {onView && (
-                  <Button variant="outline" onClick={() => onView(workout.id)}>
+                  <Button variant="outline" 
+                    onClick={() => {
+                      const firstVideo = workout.exercises.find(ex => ex.video?.video_url)?.video?.video_url;
+                      if (firstVideo) window.open(firstVideo, '_blank');
+                    }}
+                    disabled={!workout.exercises.some(ex => ex.video?.video_url)}
+                  >
                     View Workout
                   </Button>
                 )}

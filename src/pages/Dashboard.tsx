@@ -18,6 +18,15 @@ const ALL_ACHIEVEMENTS = [
   { id: 'goal_completed', label: 'Goal Completed', icon: Target },
 ];
 
+const MOTIVATION_QUOTES = [
+  "The only bad workout is the one that didn't happen. Keep pushing forward!",
+  "Success starts with self-discipline.",
+  "Push yourself, because no one else is going to do it for you.",
+  "Don't limit your challenges. Challenge your limits.",
+  "You are stronger than you think.",
+  "Small progress is still progress."
+];
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<any[]>([]);
@@ -29,6 +38,7 @@ const Dashboard = () => {
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [progressData, setProgressData] = useState<any[]>([]);
   const [typeData, setTypeData] = useState<any[]>([]);
+  const [motivationIndex, setMotivationIndex] = useState(0);
 
   useEffect(() => {
     const fetchWorkoutPlan = async () => {
@@ -106,6 +116,13 @@ const Dashboard = () => {
     fetchGamification();
   }, [user?.id]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMotivationIndex(i => (i + 1) % MOTIVATION_QUOTES.length);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const completionRate = Math.round((completedWorkouts.length / workoutPlan.length) * 100);
 
   const toggleWorkoutCompletion = (day: string) => {
@@ -142,6 +159,19 @@ const Dashboard = () => {
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <NavigationBar />
       <div className="container mx-auto px-4 py-12">
+        {/* Motivation Section - moved to top */}
+        <div className="mb-10 text-center">
+          <Card className="shadow-lg bg-background mx-auto max-w-xl">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-emerald-700 dark:text-emerald-200">💡 Motivation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-base text-muted-foreground italic">
+                {MOTIVATION_QUOTES[motivationIndex]}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
         {/* Welcome Section */}
         <div className="mb-10 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-emerald-700 dark:text-emerald-400 mb-3 drop-shadow-lg">
