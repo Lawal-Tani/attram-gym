@@ -30,7 +30,11 @@
     
     --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(168 76% 42%) 50%, hsl(200 76% 48%) 100%);
+    --gradient-stats: linear-gradient(135deg, hsl(142 76% 36% / 0.1), hsl(142 76% 36% / 0.3));
     --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.2);
+    --shadow-xl: 0 25px 50px -12px hsl(142 76% 36% / 0.15);
+    --animation-float: float 6s ease-in-out infinite;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -75,7 +79,11 @@
     
     --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(168 76% 42%) 50%, hsl(200 76% 48%) 100%);
+    --gradient-stats: linear-gradient(135deg, hsl(142 76% 36% / 0.1), hsl(142 76% 36% / 0.3));
     --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.2);
+    --shadow-xl: 0 25px 50px -12px hsl(142 76% 36% / 0.15);
+    --animation-float: float 6s ease-in-out infinite;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -101,6 +109,42 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
   }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-xl;
+  }
+  
+  .glow-effect {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+  }
+  
+  .hero-bg {
+    background: linear-gradient(135deg, hsl(var(--accent) / 0.05) 0%, hsl(var(--primary) / 0.05) 100%);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--accent) / 0.3); }
+  50% { box-shadow: 0 0 40px hsl(var(--accent) / 0.6); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
