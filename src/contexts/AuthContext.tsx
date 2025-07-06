@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           start_date: profile.start_date || new Date().toISOString(),
           subscription_plan: profile.subscription_plan || 'basic',
           payment_method: profile.payment_method || 'none',
-          fitness_level: profile.fitness_level || 'beginner',
+          fitness_level: (profile.fitness_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
           equipment_access: profile.equipment_access || [],
           limitations: profile.limitations || [],
           injuries: profile.injuries || '',

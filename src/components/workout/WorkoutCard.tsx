@@ -118,17 +118,23 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Complete
                 </Button>
-                {onView && (
-                  <Button variant="outline" 
-                    onClick={() => {
-                      const firstVideo = workout.exercises.find(ex => ex.video?.video_url)?.video?.video_url;
-                      if (firstVideo) window.open(firstVideo, '_blank');
-                    }}
-                    disabled={!workout.exercises.some(ex => ex.video?.video_url)}
-                  >
-                    View Workout
-                  </Button>
-                )}
+                <Button variant="outline" 
+                  onClick={() => {
+                    const firstVideo = workout.exercises.find(ex => ex.video?.video_url)?.video?.video_url;
+                    if (firstVideo) {
+                      window.open(firstVideo, '_blank');
+                    } else {
+                      // Fallback to search for exercise videos by name
+                      const firstExercise = workout.exercises[0];
+                      if (firstExercise) {
+                        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(firstExercise.name + ' exercise tutorial')}`;
+                        window.open(searchUrl, '_blank');
+                      }
+                    }
+                  }}
+                >
+                  View Workout
+                </Button>
                 <Button variant={timerActive ? 'default' : 'outline'} onClick={timerActive ? pauseTimer : startTimer}>
                   {timerActive ? 'Pause' : 'Start Workout'}
                 </Button>

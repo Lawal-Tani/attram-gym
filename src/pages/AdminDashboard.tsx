@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 interface Member {
   id: string;
   name: string;
-  email: string;
   goal: 'weight_loss' | 'muscle_gain';
   membershipExpiry: string;
   startDate: string;
@@ -28,7 +27,6 @@ const AdminDashboard = () => {
 
   const [newUser, setNewUser] = useState({
     name: '',
-    email: '',
     goal: 'weight_loss' as 'weight_loss' | 'muscle_gain',
     membershipExpiry: '',
     role: 'user' as 'user' | 'admin'
@@ -63,18 +61,17 @@ const AdminDashboard = () => {
   }, []);
 
   const handleAddUser = () => {
-    if (newUser.name && newUser.email && newUser.membershipExpiry) {
+    if (newUser.name && newUser.membershipExpiry) {
       const user: Member = {
         id: Date.now().toString(),
         name: newUser.name,
-        email: newUser.email,
         goal: newUser.goal,
         membershipExpiry: newUser.membershipExpiry,
         startDate: new Date().toISOString().split('T')[0],
         role: newUser.role
       };
       setMembers([...members, user]);
-      setNewUser({ name: '', email: '', goal: 'weight_loss', membershipExpiry: '', role: 'user' });
+      setNewUser({ name: '', goal: 'weight_loss', membershipExpiry: '', role: 'user' });
     }
   };
 
@@ -166,17 +163,6 @@ const AdminDashboard = () => {
                 />
               </div>
               
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  placeholder="Enter email address"
-                />
-              </div>
-
               <div>
                 <Label htmlFor="role">Role</Label>
                 <Select value={newUser.role} onValueChange={(value: 'user' | 'admin') => setNewUser({ ...newUser, role: value })}>

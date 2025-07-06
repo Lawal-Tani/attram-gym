@@ -173,59 +173,60 @@ const Dashboard = () => {
           </Card>
         </div>
         {/* Welcome Section */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-emerald-700 dark:text-emerald-400 mb-3 drop-shadow-lg">
-            Welcome back, <span className="text-blue-600 dark:text-blue-300">{user?.name}</span>! 💪
+        <div className="mb-10 text-center relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent/10 rounded-3xl -z-10"></div>
+          <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent mb-4 drop-shadow-lg">
+            Welcome back, <span className="text-primary">{user?.name}</span>! 💪
           </h1>
-          <p className="text-lg md:text-xl text-blue-900 dark:text-blue-200 font-medium">
-            Ready to crush your <span className="capitalize font-semibold text-emerald-600 dark:text-emerald-300">{user?.goal?.replace('_', ' ')}</span> goals today?
+          <p className="text-lg md:text-xl text-foreground/80 font-medium">
+            Ready to crush your <span className="capitalize font-bold text-accent">{user?.goal?.replace('_', ' ')}</span> goals today?
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-8 mb-12">
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
+          <Card className="shadow-xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-accent/5 to-accent/20 border-accent/30 hover:shadow-glow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-semibold text-emerald-800 dark:text-emerald-200">This Week</CardTitle>
-              <Target className="h-5 w-5 text-emerald-500" />
+              <CardTitle className="text-base font-semibold text-accent">This Week</CardTitle>
+              <Target className="h-5 w-5 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">{completionRate}%</div>
-              <Progress value={completionRate} className="h-2 my-2 bg-accent" />
+              <div className="text-3xl font-extrabold text-accent">{completionRate}%</div>
+              <Progress value={completionRate} className="h-3 my-3" />
               <p className="text-xs text-muted-foreground">
                 {completedWorkouts.length} of {workoutPlan.length} workouts
               </p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
+          <Card className="shadow-xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-blue-500/5 to-blue-500/20 border-blue-500/30 hover:shadow-blue-500/20 hover:shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-semibold text-blue-800 dark:text-blue-200">Streak</CardTitle>
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <CardTitle className="text-base font-semibold text-blue-600">Streak</CardTitle>
+              <TrendingUp className="h-5 w-5 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-blue-700 dark:text-blue-300">7</div>
+              <div className="text-3xl font-extrabold text-blue-600">7</div>
               <p className="text-xs text-muted-foreground">days active</p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
+          <Card className="shadow-xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-purple-500/5 to-purple-500/20 border-purple-500/30 hover:shadow-purple-500/20 hover:shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-semibold text-emerald-800 dark:text-emerald-200">Goal</CardTitle>
-              <Target className="h-5 w-5 text-emerald-500" />
+              <CardTitle className="text-base font-semibold text-purple-600">Goal</CardTitle>
+              <Target className="h-5 w-5 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold capitalize text-emerald-700 dark:text-emerald-300">
+              <div className="text-2xl font-bold capitalize text-purple-600">
                 {user?.goal?.replace('_', ' ')}
               </div>
               <p className="text-xs text-muted-foreground">current focus</p>
             </CardContent>
           </Card>
-          <Card className="shadow-xl hover:scale-105 transition-transform bg-background">
+          <Card className="shadow-xl hover:scale-105 transition-all duration-300 bg-gradient-to-br from-orange-500/5 to-orange-500/20 border-orange-500/30 hover:shadow-orange-500/20 hover:shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-semibold text-blue-800 dark:text-blue-200">Membership</CardTitle>
-              <Calendar className="h-5 w-5 text-blue-500" />
+              <CardTitle className="text-base font-semibold text-orange-600">Membership</CardTitle>
+              <Calendar className="h-5 w-5 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+              <div className="text-2xl font-bold text-orange-600">
                 {membershipStatus.days}
               </div>
               <p className="text-xs text-muted-foreground">
