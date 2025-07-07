@@ -171,7 +171,7 @@ const Dashboard = () => {
         <div className="mb-12 text-center">
           <Card className="shadow-2xl mx-auto max-w-2xl border-0 card-hover animate-pulse-glow" style={{background: 'var(--gradient-hero)', boxShadow: 'var(--shadow-electric)'}}>
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold text-white font-poppins flex items-center justify-center gap-3">
+              <CardTitle className="text-2xl font-medium text-white font-poppins flex items-center justify-center gap-3">
                 <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
                   💡
                 </div>
@@ -179,11 +179,11 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg text-white/90 italic font-medium leading-relaxed">
+              <p className="text-lg text-white/90 italic font-normal leading-relaxed">
                 "{MOTIVATION_QUOTES[motivationIndex]}"
               </p>
               <div className="mt-6 flex justify-center">
-                <div className="px-4 py-2 bg-white/20 rounded-full text-white font-semibold text-sm backdrop-blur-sm">
+                <div className="px-4 py-2 bg-white/20 rounded-full text-white font-normal text-sm backdrop-blur-sm">
                   Keep pushing forward! 🚀
                 </div>
               </div>
@@ -194,10 +194,10 @@ const Dashboard = () => {
         <div className="mb-16 text-center relative">
           <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 rounded-3xl blur-xl -z-10"></div>
           <div className="relative">
-            <h1 className="text-5xl md:text-7xl font-extrabold font-poppins mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-semibold font-poppins mb-6 leading-tight">
               <span className="text-gradient drop-shadow-2xl">Welcome back,</span>
               <br />
-              <span className="text-primary font-black animate-float">{user?.name}</span>
+              <span className="text-primary font-medium animate-float">{user?.name}</span>
               <span className="text-6xl md:text-8xl ml-4 animate-bounce">💪</span>
             </h1>
             <div className="relative">
@@ -227,13 +227,13 @@ const Dashboard = () => {
           <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-neon)', boxShadow: 'var(--shadow-neon)'}}>
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-white font-poppins">This Week</CardTitle>
+              <CardTitle className="text-lg font-medium text-white font-poppins">This Week</CardTitle>
               <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
                 <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-white mb-3 font-poppins">{completionRate}%</div>
+              <div className="text-4xl font-semibold text-white mb-3 font-poppins">{completionRate}%</div>
               <Progress value={completionRate} className="h-4 my-4 bg-white/20" />
               <p className="text-sm text-white/80 font-medium">
                 {completedWorkouts.length} of {workoutPlan.length} workouts completed
@@ -244,13 +244,13 @@ const Dashboard = () => {
           <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-ocean)', boxShadow: 'var(--shadow-electric)'}}>
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-white font-poppins">Streak</CardTitle>
+              <CardTitle className="text-lg font-medium text-white font-poppins">Streak</CardTitle>
               <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-white mb-2 font-poppins">7</div>
+              <div className="text-4xl font-semibold text-white mb-2 font-poppins">7</div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex gap-1">
                   {[...Array(7)].map((_, i) => (
@@ -265,13 +265,13 @@ const Dashboard = () => {
           <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-fire)', boxShadow: 'var(--shadow-cyber)'}}>
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-white font-poppins">Goal</CardTitle>
+              <CardTitle className="text-lg font-medium text-white font-poppins">Goal</CardTitle>
               <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
                 <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-2xl font-black capitalize text-white mb-2 font-poppins">
+              <div className="text-2xl font-semibold capitalize text-white mb-2 font-poppins">
                 {user?.goal?.replace('_', ' ')}
               </div>
               <div className="px-3 py-1 bg-white/20 rounded-full text-white text-xs font-semibold mb-2 inline-block backdrop-blur-sm">
@@ -284,13 +284,13 @@ const Dashboard = () => {
           <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-sunset)', boxShadow: 'var(--shadow-neon)'}}>
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-white font-poppins">Membership</CardTitle>
+              <CardTitle className="text-lg font-medium text-white font-poppins">Membership</CardTitle>
               <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-white mb-2 font-poppins">
+              <div className="text-4xl font-semibold text-white mb-2 font-poppins">
                 {membershipStatus.days}
               </div>
               <div className={`px-3 py-1 rounded-full text-xs font-semibold mb-2 inline-block backdrop-blur-sm ${
