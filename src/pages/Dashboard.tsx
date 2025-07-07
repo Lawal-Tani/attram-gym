@@ -39,6 +39,8 @@ const Dashboard = () => {
   const [progressData, setProgressData] = useState<any[]>([]);
   const [typeData, setTypeData] = useState<any[]>([]);
   const [motivationIndex, setMotivationIndex] = useState(0);
+  const [weeklyGoal, setWeeklyGoal] = useState(4); // Default weekly workout goal
+  const [actualWeeklyWorkouts, setActualWeeklyWorkouts] = useState(0);
 
   useEffect(() => {
     const fetchWorkoutPlan = async () => {
@@ -105,6 +107,7 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .single();
       setStats(statsData);
+      
       // Fetch achievements
       const { data: achievementsData } = await (supabase as any)
         .from('user_achievements')
@@ -112,6 +115,25 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .eq('unlocked', true);
       setAchievements(achievementsData || []);
+      
+      // Fetch this week's workout completions
+      const today = new Date();
+      const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+      const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+      
+      const { data: thisWeekCompletions } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('completed_date', startOfWeek.toISOString().split('T')[0])
+        .lte('completed_date', endOfWeek.toISOString().split('T')[0]);
+      
+      setActualWeeklyWorkouts(thisWeekCompletions?.length || 0);
+      
+      // Set weekly goal based on user preference
+      const frequency = user.workout_frequency || '3-4';
+      const goalMap: any = { '1-2': 2, '3-4': 4, '5-6': 6, 'daily': 7 };
+      setWeeklyGoal(goalMap[frequency] || 4);
     }
     fetchGamification();
   }, [user?.id]);
@@ -123,7 +145,7 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const completionRate = Math.round((completedWorkouts.length / workoutPlan.length) * 100);
+  const completionRate = Math.round((actualWeeklyWorkouts / weeklyGoal) * 100);
 
   const toggleWorkoutCompletion = (day: string) => {
     if (completedWorkouts.includes(day)) {
@@ -236,7 +258,7 @@ const Dashboard = () => {
               <div className="text-4xl font-semibold text-white mb-3 font-poppins">{completionRate}%</div>
               <Progress value={completionRate} className="h-4 my-4 bg-white/20" />
               <p className="text-sm text-white/80 font-medium">
-                {completedWorkouts.length} of {workoutPlan.length} workouts completed
+                {actualWeeklyWorkouts} of {weeklyGoal} workouts completed
               </p>
             </CardContent>
           </Card>
@@ -250,10 +272,10 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-semibold text-white mb-2 font-poppins">7</div>
+              <div className="text-4xl font-semibold text-white mb-2 font-poppins">{stats?.current_streak || 0}</div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex gap-1">
-                  {[...Array(7)].map((_, i) => (
+                  {[...Array(Math.min(stats?.current_streak || 0, 7))].map((_, i) => (
                     <div key={i} className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: `${i * 0.1}s`}}></div>
                   ))}
                 </div>

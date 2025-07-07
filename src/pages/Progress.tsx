@@ -47,6 +47,18 @@ const ProgressPage = () => {
     streak: 0,
     strengthChange: 0,
   });
+  const [cardioStats, setCardioStats] = useState({
+    weeklyMinutes: 0,
+    avgHeartRate: 0,
+    caloriesBurned: 0,
+    weeklyGoal: 240 // 4 hours weekly goal
+  });
+  const [goalProgress, setGoalProgress] = useState({
+    weeklyWorkouts: { current: 0, target: 4 },
+    benchPress: { current: 0, target: 200 },
+    runTime: { current: 0, target: 25 }, // in minutes
+    weightLoss: { current: 0, target: 10 }
+  });
   const [loadingStats, setLoadingStats] = useState(true);
   const [errorStats, setErrorStats] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -219,12 +231,75 @@ const ProgressPage = () => {
           .eq('user_id', user.id)
           .single();
         if (statsError) throw statsError;
+        
+        // Calculate strength change from recent progress entries
+        const { data: recentStrength } = await supabase
+          .from('progress_entries')
+          .select('weight, date')
+          .eq('user_id', user.id)
+          .eq('workout_type', 'strength')
+          .order('date', { ascending: false })
+          .limit(10);
+        
+        let strengthChange = 0;
+        if (recentStrength && recentStrength.length > 1) {
+          const latest = recentStrength[0]?.weight || 0;
+          const earlier = recentStrength[recentStrength.length - 1]?.weight || 0;
+          if (earlier > 0) {
+            strengthChange = Math.round(((latest - earlier) / earlier) * 100);
+          }
+        }
+        
         setQuickStats({
-          workouts: stats.total_workouts,
-          totalTime: stats.total_duration_minutes,
-          streak: stats.current_streak,
-          strengthChange: 0,
+          workouts: stats?.total_workouts || 0,
+          totalTime: stats?.total_duration_minutes || 0,
+          streak: stats?.current_streak || 0,
+          strengthChange,
         });
+        
+        // Fetch cardio stats from this week
+        const today = new Date();
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+        
+        const { data: cardioEntries } = await supabase
+          .from('progress_entries')
+          .select('duration_minutes')
+          .eq('user_id', user.id)
+          .eq('workout_type', 'cardio')
+          .gte('date', startOfWeek.toISOString().split('T')[0]);
+        
+        const weeklyCardioMinutes = cardioEntries?.reduce((sum, entry) => sum + (entry.duration_minutes || 0), 0) || 0;
+        
+        setCardioStats({
+          weeklyMinutes: weeklyCardioMinutes,
+          avgHeartRate: 142, // placeholder - could be calculated from actual data
+          caloriesBurned: Math.round(weeklyCardioMinutes * 10), // rough estimation
+          weeklyGoal: 240
+        });
+        
+        // Fetch goal progress
+        const { data: thisWeekCompletions } = await supabase
+          .from('workout_completions')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('completed_date', startOfWeek.toISOString().split('T')[0]);
+        
+        // Get latest bench press weight
+        const { data: benchData } = await supabase
+          .from('progress_entries')
+          .select('weight')
+          .eq('user_id', user.id)
+          .ilike('exercise_name', '%bench%press%')
+          .order('date', { ascending: false })
+          .limit(1);
+        
+        setGoalProgress({
+          weeklyWorkouts: { current: thisWeekCompletions?.length || 0, target: 4 },
+          benchPress: { current: benchData?.[0]?.weight || 0, target: 200 },
+          runTime: { current: 27.5, target: 25 }, // placeholder
+          weightLoss: { current: 6, target: 10 } // placeholder
+        });
+        
       } catch (err: any) {
         setErrorStats(err.message || 'Failed to load quick stats');
       } finally {
@@ -479,21 +554,21 @@ const ProgressPage = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Weekly Cardio Minutes</span>
-                    <Badge variant="secondary">180 min</Badge>
+                    <Badge variant="secondary">{cardioStats.weeklyMinutes} / {cardioStats.weeklyGoal} min</Badge>
                   </div>
-                  <Progress value={75} className="h-2" />
+                  <Progress value={(cardioStats.weeklyMinutes / cardioStats.weeklyGoal) * 100} className="h-2" />
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Average Heart Rate</span>
-                    <Badge variant="secondary">142 bpm</Badge>
+                    <Badge variant="secondary">{cardioStats.avgHeartRate} bpm</Badge>
                   </div>
                   <Progress value={65} className="h-2" />
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Calories Burned</span>
-                    <Badge variant="secondary">2,450 cal</Badge>
+                    <Badge variant="secondary">{cardioStats.caloriesBurned} cal</Badge>
                   </div>
-                  <Progress value={85} className="h-2" />
+                  <Progress value={Math.min((cardioStats.caloriesBurned / 2400) * 100, 100)} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -512,34 +587,34 @@ const ProgressPage = () => {
                 <div className="space-y-6">
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">Workout 4x per week</span>
-                      <span className="text-sm text-muted-foreground">3/4 this week</span>
+                      <span className="font-medium">Workout {goalProgress.weeklyWorkouts.target}x per week</span>
+                      <span className="text-sm text-muted-foreground">{goalProgress.weeklyWorkouts.current}/{goalProgress.weeklyWorkouts.target} this week</span>
                     </div>
-                    <Progress value={75} className="h-2" />
+                    <Progress value={(goalProgress.weeklyWorkouts.current / goalProgress.weeklyWorkouts.target) * 100} className="h-2" />
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">Bench Press 200lbs</span>
-                      <span className="text-sm text-muted-foreground">155/200 lbs</span>
+                      <span className="font-medium">Bench Press {goalProgress.benchPress.target}lbs</span>
+                      <span className="text-sm text-muted-foreground">{goalProgress.benchPress.current}/{goalProgress.benchPress.target} lbs</span>
                     </div>
-                    <Progress value={77.5} className="h-2" />
+                    <Progress value={(goalProgress.benchPress.current / goalProgress.benchPress.target) * 100} className="h-2" />
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">Run 5K in 25 minutes</span>
-                      <span className="text-sm text-muted-foreground">27:30 current</span>
+                      <span className="font-medium">Run 5K in {goalProgress.runTime.target} minutes</span>
+                      <span className="text-sm text-muted-foreground">{goalProgress.runTime.current}:30 current</span>
                     </div>
-                    <Progress value={65} className="h-2" />
+                    <Progress value={Math.max(0, 100 - ((goalProgress.runTime.current - goalProgress.runTime.target) / goalProgress.runTime.target * 100))} className="h-2" />
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">Lose 10 pounds</span>
-                      <span className="text-sm text-muted-foreground">6/10 lbs</span>
+                      <span className="font-medium">Lose {goalProgress.weightLoss.target} pounds</span>
+                      <span className="text-sm text-muted-foreground">{goalProgress.weightLoss.current}/{goalProgress.weightLoss.target} lbs</span>
                     </div>
-                    <Progress value={60} className="h-2" />
+                    <Progress value={(goalProgress.weightLoss.current / goalProgress.weightLoss.target) * 100} className="h-2" />
                   </div>
                 </div>
               </CardContent>
