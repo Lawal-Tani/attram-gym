@@ -159,29 +159,31 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 hero-bg"></div>
-      <div className="absolute top-10 left-10 w-72 h-72 bg-accent/5 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-accent/3 rounded-full blur-3xl animate-float" style={{animationDelay: '4s'}}></div>
+      <div className="absolute top-10 left-10 w-72 h-72 rounded-full blur-3xl animate-float" style={{background: 'var(--gradient-neon)', opacity: 0.1}}></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full blur-3xl animate-float" style={{background: 'var(--gradient-fire)', opacity: 0.1, animationDelay: '2s'}}></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl animate-float" style={{background: 'var(--gradient-ocean)', opacity: 0.1, animationDelay: '4s'}}></div>
+      <div className="absolute top-20 right-20 w-64 h-64 rounded-full blur-2xl animate-float" style={{background: 'var(--gradient-sunset)', opacity: 0.15, animationDelay: '1s'}}></div>
+      <div className="absolute bottom-20 left-20 w-56 h-56 rounded-full blur-2xl animate-float" style={{background: 'var(--gradient-nature)', opacity: 0.12, animationDelay: '3s'}}></div>
       
       <NavigationBar />
       <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Motivation Section - moved to top */}
         <div className="mb-12 text-center">
-          <Card className="shadow-2xl bg-gradient-to-br from-accent/10 via-background to-accent/5 mx-auto max-w-2xl border-accent/20 card-hover animate-pulse-glow">
+          <Card className="shadow-2xl mx-auto max-w-2xl border-0 card-hover animate-pulse-glow" style={{background: 'var(--gradient-hero)', boxShadow: 'var(--shadow-electric)'}}>
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold text-gradient font-poppins flex items-center justify-center gap-3">
-                <div className="p-2 bg-accent/10 rounded-full">
+              <CardTitle className="text-2xl font-bold text-white font-poppins flex items-center justify-center gap-3">
+                <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
                   💡
                 </div>
                 Daily Motivation
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg text-foreground/80 italic font-medium leading-relaxed">
+              <p className="text-lg text-white/90 italic font-medium leading-relaxed">
                 "{MOTIVATION_QUOTES[motivationIndex]}"
               </p>
               <div className="mt-6 flex justify-center">
-                <div className="px-4 py-2 bg-accent/10 rounded-full text-accent font-semibold text-sm">
+                <div className="px-4 py-2 bg-white/20 rounded-full text-white font-semibold text-sm backdrop-blur-sm">
                   Keep pushing forward! 🚀
                 </div>
               </div>
@@ -222,85 +224,85 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-8 mb-16">
-          <Card className="group relative overflow-hidden card-hover bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-accent/30 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-neon)', boxShadow: 'var(--shadow-neon)'}}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-accent font-poppins">This Week</CardTitle>
-              <div className="p-3 bg-accent/10 rounded-full group-hover:bg-accent/20 transition-colors duration-300">
-                <Target className="h-6 w-6 text-accent" />
+              <CardTitle className="text-lg font-bold text-white font-poppins">This Week</CardTitle>
+              <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
+                <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-accent mb-3 font-poppins">{completionRate}%</div>
-              <Progress value={completionRate} className="h-4 my-4 bg-accent/10" />
-              <p className="text-sm text-muted-foreground font-medium">
+              <div className="text-4xl font-black text-white mb-3 font-poppins">{completionRate}%</div>
+              <Progress value={completionRate} className="h-4 my-4 bg-white/20" />
+              <p className="text-sm text-white/80 font-medium">
                 {completedWorkouts.length} of {workoutPlan.length} workouts completed
               </p>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden card-hover bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border-blue-500/30 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-ocean)', boxShadow: 'var(--shadow-electric)'}}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-blue-600 font-poppins">Streak</CardTitle>
-              <div className="p-3 bg-blue-500/10 rounded-full group-hover:bg-blue-500/20 transition-colors duration-300">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+              <CardTitle className="text-lg font-bold text-white font-poppins">Streak</CardTitle>
+              <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-blue-600 mb-2 font-poppins">7</div>
+              <div className="text-4xl font-black text-white mb-2 font-poppins">7</div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex gap-1">
                   {[...Array(7)].map((_, i) => (
-                    <div key={i} className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: `${i * 0.1}s`}}></div>
+                    <div key={i} className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: `${i * 0.1}s`}}></div>
                   ))}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground font-medium">days active streak</p>
+              <p className="text-sm text-white/80 font-medium">days active streak</p>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden card-hover bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border-purple-500/30 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-fire)', boxShadow: 'var(--shadow-cyber)'}}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-purple-600 font-poppins">Goal</CardTitle>
-              <div className="p-3 bg-purple-500/10 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">
-                <Target className="h-6 w-6 text-purple-600" />
+              <CardTitle className="text-lg font-bold text-white font-poppins">Goal</CardTitle>
+              <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
+                <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-2xl font-black capitalize text-purple-600 mb-2 font-poppins">
+              <div className="text-2xl font-black capitalize text-white mb-2 font-poppins">
                 {user?.goal?.replace('_', ' ')}
               </div>
-              <div className="px-3 py-1 bg-purple-500/10 rounded-full text-purple-600 text-xs font-semibold mb-2 inline-block">
+              <div className="px-3 py-1 bg-white/20 rounded-full text-white text-xs font-semibold mb-2 inline-block backdrop-blur-sm">
                 🎯 ACTIVE
               </div>
-              <p className="text-sm text-muted-foreground font-medium">current focus area</p>
+              <p className="text-sm text-white/80 font-medium">current focus area</p>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden card-hover bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/30 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-sunset)', boxShadow: 'var(--shadow-neon)'}}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-bold text-orange-600 font-poppins">Membership</CardTitle>
-              <div className="p-3 bg-orange-500/10 rounded-full group-hover:bg-orange-500/20 transition-colors duration-300">
-                <Calendar className="h-6 w-6 text-orange-600" />
+              <CardTitle className="text-lg font-bold text-white font-poppins">Membership</CardTitle>
+              <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
+                <Calendar className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-4xl font-black text-orange-600 mb-2 font-poppins">
+              <div className="text-4xl font-black text-white mb-2 font-poppins">
                 {membershipStatus.days}
               </div>
-              <div className={`px-3 py-1 rounded-full text-xs font-semibold mb-2 inline-block ${
-                membershipStatus.status === 'expired' ? 'bg-red-100 text-red-600' :
-                membershipStatus.status === 'expiring' ? 'bg-yellow-100 text-yellow-600' :
-                'bg-green-100 text-green-600'
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold mb-2 inline-block backdrop-blur-sm ${
+                membershipStatus.status === 'expired' ? 'bg-red-500/20 text-white' :
+                membershipStatus.status === 'expiring' ? 'bg-yellow-500/20 text-white' :
+                'bg-green-500/20 text-white'
               }`}>
                 {membershipStatus.status === 'expired' ? '⚠️ EXPIRED' :
                  membershipStatus.status === 'expiring' ? '⏰ EXPIRING' :
                  '✅ ACTIVE'}
               </div>
-              <p className="text-sm text-muted-foreground font-medium">
+              <p className="text-sm text-white/80 font-medium">
                 {membershipStatus.status === 'expired' ? 'days past expiry' : 'days remaining'}
               </p>
             </CardContent>
@@ -332,30 +334,30 @@ const Dashboard = () => {
 
         {/* Gamification Section */}
         <div className="mb-12">
-          <Card className="shadow-xl bg-background">
+          <Card className="shadow-xl border-0 card-hover" style={{background: 'var(--gradient-nature)', boxShadow: 'var(--shadow-glow)'}}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-500" />
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Trophy className="h-5 w-5 text-yellow-300" />
                 Achievements & Streaks
               </CardTitle>
-              <CardDescription>Track your progress and unlock new milestones!</CardDescription>
+              <CardDescription className="text-white/80">Track your progress and unlock new milestones!</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-8 items-center mb-6">
-                <div className="flex flex-col items-center">
-                  <Flame className="h-8 w-8 text-orange-500 mb-1" />
-                  <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
-                  <span className="text-xs text-gray-500">Current Streak</span>
+                <div className="flex flex-col items-center bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                  <Flame className="h-8 w-8 text-orange-300 mb-1" />
+                  <span className="font-bold text-lg text-white">{stats?.current_streak || 0}</span>
+                  <span className="text-xs text-white/70">Current Streak</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <Flame className="h-8 w-8 text-red-500 mb-1" />
-                  <span className="font-bold text-lg">{stats?.best_streak || 0}</span>
-                  <span className="text-xs text-gray-500">Best Streak</span>
+                <div className="flex flex-col items-center bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                  <Flame className="h-8 w-8 text-red-300 mb-1" />
+                  <span className="font-bold text-lg text-white">{stats?.best_streak || 0}</span>
+                  <span className="text-xs text-white/70">Best Streak</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <Trophy className="h-8 w-8 text-yellow-500 mb-1" />
-                  <span className="font-bold text-lg">{stats?.total_workouts || 0}</span>
-                  <span className="text-xs text-gray-500">Total Workouts</span>
+                <div className="flex flex-col items-center bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                  <Trophy className="h-8 w-8 text-yellow-300 mb-1" />
+                  <span className="font-bold text-lg text-white">{stats?.total_workouts || 0}</span>
+                  <span className="text-xs text-white/70">Total Workouts</span>
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
@@ -364,11 +366,11 @@ const Dashboard = () => {
                   return (
                     <div
                       key={a.id}
-                      className={`flex flex-col items-center rounded-lg p-4 shadow transition-all ${unlocked ? 'bg-accent/10' : 'bg-muted opacity-50 grayscale'}`}
+                      className={`flex flex-col items-center rounded-lg p-4 shadow transition-all backdrop-blur-sm ${unlocked ? 'bg-white/20 border border-white/30' : 'bg-white/5 opacity-50 grayscale'}`}
                     >
-                      <a.icon className={`h-8 w-8 mb-2 ${unlocked ? 'text-accent animate-bounce' : 'text-muted-foreground'}`} />
-                      <span className={`font-bold text-center ${unlocked ? 'text-accent' : 'text-muted-foreground'}`}>{a.label}</span>
-                      <span className="text-xs text-muted-foreground mt-1">{unlocked ? 'Unlocked!' : 'Locked'}</span>
+                      <a.icon className={`h-8 w-8 mb-2 ${unlocked ? 'text-yellow-300 animate-bounce' : 'text-white/50'}`} />
+                      <span className={`font-bold text-center ${unlocked ? 'text-white' : 'text-white/50'}`}>{a.label}</span>
+                      <span className="text-xs text-white/60 mt-1">{unlocked ? 'Unlocked!' : 'Locked'}</span>
                     </div>
                   );
                 })}
