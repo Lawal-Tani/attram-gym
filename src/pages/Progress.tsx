@@ -556,9 +556,9 @@ const ProgressPage = () => {
                     <span className="text-sm font-medium">Weekly Cardio Minutes</span>
                     <Badge variant="secondary">{cardioStats.weeklyMinutes} / {cardioStats.weeklyGoal} min</Badge>
                   </div>
-                  <Progress value={(cardioStats.weeklyMinutes / cardioStats.weeklyGoal) * 100} className="h-2" />
-                  
-                  <div className="flex justify-between items-center">
+                   <Progress value={Math.max((cardioStats.weeklyMinutes / cardioStats.weeklyGoal) * 100, 8)} className="h-2" />
+                   
+                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Average Heart Rate</span>
                     <Badge variant="secondary">{cardioStats.avgHeartRate} bpm</Badge>
                   </div>

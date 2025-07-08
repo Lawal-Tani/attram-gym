@@ -256,10 +256,15 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="relative z-10">
               <div className="text-4xl font-semibold text-white mb-3 font-poppins">{completionRate}%</div>
-              <Progress value={completionRate} className="h-4 my-4 bg-white/20" />
+              <Progress value={Math.max(completionRate, 15)} className="h-4 my-4 bg-white/20" />
               <p className="text-sm text-white/80 font-medium">
                 {actualWeeklyWorkouts} of {weeklyGoal} workouts completed
               </p>
+              {actualWeeklyWorkouts === 0 && (
+                <p className="text-xs text-white/60 mt-1">
+                  Last workout: {stats?.last_workout_date ? new Date(stats.last_workout_date).toLocaleDateString() : 'Never'}
+                </p>
+              )}
             </CardContent>
           </Card>
 
