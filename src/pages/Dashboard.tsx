@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import StreakCalendar from '@/components/StreakCalendar';
 import { Calendar, Target, TrendingUp, CheckCircle, Clock, AlertTriangle, Trophy, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<any[]>([]);
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
+  const [completedWorkoutDates, setCompletedWorkoutDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
@@ -134,6 +136,14 @@ const Dashboard = () => {
       const frequency = user.workout_frequency || '3-4';
       const goalMap: any = { '1-2': 2, '3-4': 4, '5-6': 6, 'daily': 7 };
       setWeeklyGoal(goalMap[frequency] || 4);
+      
+      // Fetch all workout completion dates for the calendar
+      const { data: allCompletions } = await supabase
+        .from('workout_completions')
+        .select('completed_date')
+        .eq('user_id', user.id);
+      
+      setCompletedWorkoutDates(allCompletions?.map(c => c.completed_date) || []);
     }
     fetchGamification();
   }, [user?.id]);
@@ -246,27 +256,10 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-8 mb-16">
-          <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-neon)', boxShadow: 'var(--shadow-neon)'}}>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-              <CardTitle className="text-lg font-medium text-white font-poppins">This Week</CardTitle>
-              <div className="p-3 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors duration-300 backdrop-blur-sm">
-                <Target className="h-6 w-6 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-4xl font-semibold text-white mb-3 font-poppins">{completionRate}%</div>
-              <Progress value={Math.max(completionRate, 15)} className="h-4 my-4 bg-white/20" />
-              <p className="text-sm text-white/80 font-medium">
-                {actualWeeklyWorkouts} of {weeklyGoal} workouts completed
-              </p>
-              {actualWeeklyWorkouts === 0 && (
-                <p className="text-xs text-white/60 mt-1">
-                  Last workout: {stats?.last_workout_date ? new Date(stats.last_workout_date).toLocaleDateString() : 'Never'}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <StreakCalendar 
+            completedDates={completedWorkoutDates} 
+            currentStreak={stats?.current_streak || 0} 
+          />
 
           <Card className="group relative overflow-hidden card-hover border-0 shadow-2xl" style={{background: 'var(--gradient-ocean)', boxShadow: 'var(--shadow-electric)'}}>
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
