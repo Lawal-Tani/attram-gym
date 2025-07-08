@@ -399,30 +399,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-10">
-          {/* Weekly Progress */}
-          <Card className="shadow-xl bg-background border border-accent/30">
-            <CardHeader>
-              <CardTitle>Progress Over Time</CardTitle>
-              <CardDescription>Your workout progress visualized</CardDescription>
-            </CardHeader>
-            <CardContent style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={progressData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#475569" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#475569" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="date" fontSize={12} stroke="#cbd5e1"/>
-                  <YAxis fontSize={12} stroke="#cbd5e1"/>
-                  <RechartsTooltip contentStyle={{ background: '#22223a', border: 'none', color: '#f8fafc' }}/>
-                  <Area type="monotone" dataKey="weight" stroke="#475569" fill="url(#colorProgress)" name="Weight" strokeWidth={3} dot={false} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        <div className="grid lg:grid-cols-2 gap-10">
           {/* Quick Stats & Motivational Card */}
           <div className="space-y-8">
             <Card className="shadow-lg bg-background">
