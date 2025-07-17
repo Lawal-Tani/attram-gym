@@ -179,73 +179,86 @@ const WorkoutPlan = () => {
   const filteredWorkouts = getFilteredWorkouts();
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       <NavigationBar />
       
-      <div className="container mx-auto px-2 sm:px-2 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Your Workout Plan
-          </h1>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <span className="font-semibold text-muted-foreground">Difficulty:</span>
-            <div className="flex flex-wrap gap-2">
-              {['beginner', 'intermediate', 'advanced'].map(level => (
-                <button
-                  key={level}
-                  onClick={() => handleLevelChange(level as 'beginner' | 'intermediate' | 'advanced')}
-                  className={`px-4 py-2 rounded-full flex items-center gap-1 font-semibold border transition-all
-                    ${selectedLevel === level
-                      ? 'bg-accent text-white border-accent shadow-lg'
-                      : 'bg-muted text-muted-foreground border-muted hover:bg-accent/20'}
-                  `}
-                >
-                  {level === 'beginner' && <Dumbbell className="w-4 h-4 mr-1" />}
-                  {level === 'intermediate' && <Flame className="w-4 h-4 mr-1" />}
-                  {level === 'advanced' && <Star className="w-4 h-4 mr-1" />}
-                  <span className="capitalize">{level}</span>
-                </button>
-              ))}
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header Section */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-3">
+              Your Workout Plan
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Today is <span className="font-semibold text-accent">{currentDay}</span>
+            </p>
+          </div>
+
+          {/* Controls Row */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between bg-card rounded-2xl p-6 border shadow-sm">
+            {/* Difficulty Selection */}
+            <div className="flex-1">
+              <label className="text-sm font-medium text-muted-foreground mb-3 block">
+                Difficulty Level
+              </label>
+              <div className="flex gap-2">
+                {['beginner', 'intermediate', 'advanced'].map(level => (
+                  <button
+                    key={level}
+                    onClick={() => handleLevelChange(level as 'beginner' | 'intermediate' | 'advanced')}
+                    className={`px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2
+                      ${selectedLevel === level
+                        ? 'bg-accent text-accent-foreground shadow-md'
+                        : 'bg-muted text-muted-foreground hover:bg-accent/20 hover:text-accent-foreground'}
+                    `}
+                  >
+                    {level === 'beginner' && <Dumbbell className="w-4 h-4" />}
+                    {level === 'intermediate' && <Flame className="w-4 h-4" />}
+                    {level === 'advanced' && <Star className="w-4 h-4" />}
+                    <span className="capitalize">{level}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <span className="font-semibold text-muted-foreground">Equipment:</span>
-            <Select value={equipmentFilter} onValueChange={(value: 'all' | 'bodyweight' | 'equipment') => setEquipmentFilter(value)}>
-              <SelectTrigger className="w-48">
-                <SelectValue>
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    {equipmentFilter === 'all' ? 'All Workouts' :
-                     equipmentFilter === 'bodyweight' ? 'No Equipment' : 'Equipment Required'}
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Workouts</SelectItem>
-                <SelectItem value="bodyweight">No Equipment</SelectItem>
-                <SelectItem value="equipment">Equipment Required</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-            <span>Today is {currentDay}</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge 
-                variant="outline" 
-                className={`capitalize bg-accent/20 text-accent border-accent`}
-              >
+
+            {/* Equipment Filter */}
+            <div className="flex-1 lg:max-w-xs">
+              <label className="text-sm font-medium text-muted-foreground mb-3 block">
+                Equipment
+              </label>
+              <Select value={equipmentFilter} onValueChange={(value: 'all' | 'bodyweight' | 'equipment') => setEquipmentFilter(value)}>
+                <SelectTrigger className="w-full h-11">
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4" />
+                      {equipmentFilter === 'all' ? 'All Workouts' :
+                       equipmentFilter === 'bodyweight' ? 'No Equipment' : 'Equipment Required'}
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Workouts</SelectItem>
+                  <SelectItem value="bodyweight">No Equipment</SelectItem>
+                  <SelectItem value="equipment">Equipment Required</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Quick Info */}
+            <div className="flex gap-2">
+              <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
                 <Target className="h-3 w-3 mr-1" />
                 {selectedLevel} level
               </Badge>
-              <Badge variant="outline" className="text-accent border-accent bg-accent/20">
-                {user?.goal === 'weight_loss' ? 'weight loss' : 'muscle gain'}
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                {user?.goal === 'weight_loss' ? 'Weight Loss' : 'Muscle Gain'}
               </Badge>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6">
+        {/* Workouts Section */}
+        <div className="space-y-8">
           {filteredWorkouts.length > 0 ? (
             <div className="grid gap-6">
               {filteredWorkouts.map((workout) => {
@@ -264,17 +277,24 @@ const WorkoutPlan = () => {
               })}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="text-muted-foreground">
-                <Filter className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No workouts found</h3>
-                <p>Try adjusting your equipment filter or difficulty level.</p>
+            <div className="text-center py-16">
+              <div className="bg-muted/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <Filter className="w-8 h-8 text-muted-foreground" />
               </div>
+              <h3 className="text-xl font-semibold mb-2">No workouts found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Try adjusting your equipment filter or difficulty level to see more workout options.
+              </p>
             </div>
           )}
         </div>
 
-        <WorkoutTips />
+        {/* Tips Section */}
+        {filteredWorkouts.length > 0 && (
+          <div className="mt-16">
+            <WorkoutTips />
+          </div>
+        )}
       </div>
     </div>
   );
