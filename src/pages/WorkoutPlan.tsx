@@ -182,70 +182,87 @@ const WorkoutPlan = () => {
     <div className="min-h-screen bg-background">
       <NavigationBar />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header Section */}
-        <div className="mb-12">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-3">
+        <div className="mb-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Your Workout Plan
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Today is <span className="font-semibold text-accent">{currentDay}</span>
             </p>
           </div>
 
-          {/* Controls Row */}
-          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between bg-card rounded-2xl p-6 border shadow-sm">
-            {/* Difficulty Selection */}
-            <div className="flex-1">
-              <label className="text-sm font-medium text-muted-foreground mb-3 block">
-                Difficulty Level
-              </label>
-              <div className="flex gap-2">
-                {['beginner', 'intermediate', 'advanced'].map(level => (
-                  <button
-                    key={level}
-                    onClick={() => handleLevelChange(level as 'beginner' | 'intermediate' | 'advanced')}
-                    className={`px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2
-                      ${selectedLevel === level
-                        ? 'bg-accent text-accent-foreground shadow-md'
-                        : 'bg-muted text-muted-foreground hover:bg-accent/20 hover:text-accent-foreground'}
-                    `}
-                  >
-                    {level === 'beginner' && <Dumbbell className="w-4 h-4" />}
-                    {level === 'intermediate' && <Flame className="w-4 h-4" />}
-                    {level === 'advanced' && <Star className="w-4 h-4" />}
-                    <span className="capitalize">{level}</span>
-                  </button>
-                ))}
+          {/* Controls - Mobile Optimized */}
+          <div className="bg-card rounded-xl p-4 border shadow-sm space-y-4">
+            {/* Difficulty & Equipment Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Difficulty Selection */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Difficulty Level
+                </label>
+                <Select value={selectedLevel} onValueChange={(value: 'beginner' | 'intermediate' | 'advanced') => handleLevelChange(value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        {selectedLevel === 'beginner' && <Dumbbell className="w-4 h-4" />}
+                        {selectedLevel === 'intermediate' && <Flame className="w-4 h-4" />}
+                        {selectedLevel === 'advanced' && <Star className="w-4 h-4" />}
+                        <span className="capitalize">{selectedLevel}</span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">
+                      <div className="flex items-center gap-2">
+                        <Dumbbell className="w-4 h-4" />
+                        Beginner
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="intermediate">
+                      <div className="flex items-center gap-2">
+                        <Flame className="w-4 h-4" />
+                        Intermediate
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="advanced">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4" />
+                        Advanced
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Equipment Filter */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Equipment
+                </label>
+                <Select value={equipmentFilter} onValueChange={(value: 'all' | 'bodyweight' | 'equipment') => setEquipmentFilter(value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-4 h-4" />
+                        {equipmentFilter === 'all' ? 'All Workouts' :
+                         equipmentFilter === 'bodyweight' ? 'No Equipment' : 'Equipment Required'}
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Workouts</SelectItem>
+                    <SelectItem value="bodyweight">No Equipment</SelectItem>
+                    <SelectItem value="equipment">Equipment Required</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Equipment Filter */}
-            <div className="flex-1 lg:max-w-xs">
-              <label className="text-sm font-medium text-muted-foreground mb-3 block">
-                Equipment
-              </label>
-              <Select value={equipmentFilter} onValueChange={(value: 'all' | 'bodyweight' | 'equipment') => setEquipmentFilter(value)}>
-                <SelectTrigger className="w-full h-11">
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-4 h-4" />
-                      {equipmentFilter === 'all' ? 'All Workouts' :
-                       equipmentFilter === 'bodyweight' ? 'No Equipment' : 'Equipment Required'}
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Workouts</SelectItem>
-                  <SelectItem value="bodyweight">No Equipment</SelectItem>
-                  <SelectItem value="equipment">Equipment Required</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Quick Info */}
-            <div className="flex gap-2">
+            {/* Quick Info Badges */}
+            <div className="flex flex-wrap gap-2 pt-2">
               <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
                 <Target className="h-3 w-3 mr-1" />
                 {selectedLevel} level

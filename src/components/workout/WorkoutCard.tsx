@@ -78,53 +78,65 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
   const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <Card className={`${isToday ? 'ring-2 ring-accent bg-accent/20' : ''} ${isCompleted ? 'bg-accent/10 border-green-200' : ''}`}>
-      <CardHeader>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="flex items-center gap-2">
+    <Card className={`${isToday ? 'ring-2 ring-accent bg-accent/5' : ''} ${isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
+      <CardHeader className="pb-4">
+        <div className="space-y-3">
+          {/* Title and Today Badge */}
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
               {workout.day_of_week}
-              {isToday && <Badge className="bg-emerald-500 text-white">Today</Badge>}
+              {isToday && <Badge className="bg-accent text-accent-foreground">Today</Badge>}
               {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
             </CardTitle>
-            <CardDescription className="text-lg font-medium text-foreground mb-2 truncate">
-              {workout.title}
-            </CardDescription>
-            <div className="flex gap-2 flex-wrap">
-              <Badge 
-                variant="outline" 
-                className={`capitalize border-2 ${
-                  workout.fitness_level === 'beginner' ? 'bg-green-700 text-green-100 border-green-700' :
-                  workout.fitness_level === 'intermediate' ? 'bg-yellow-500 text-yellow-900 border-yellow-500' :
-                  workout.fitness_level === 'advanced' ? 'bg-red-700 text-red-100 border-red-700' :
-                  'bg-muted text-muted-foreground border-muted'
-                }`}
-              >
-                <Target className="h-3 w-3 mr-1" />
-                {workout.fitness_level}
-              </Badge>
-              <Badge variant="outline" className="text-accent border-accent bg-accent/10">
-                {workout.goal_type.replace('_', ' ')}
-              </Badge>
-            </div>
           </div>
-          <div className="flex flex-col gap-2 items-end w-full md:w-auto">
-            {!isCompleted && (
-              <div className="flex flex-wrap gap-2 justify-end">
+          
+          {/* Workout Title */}
+          <CardDescription className="text-base font-medium text-foreground">
+            {workout.title}
+          </CardDescription>
+          
+          {/* Badges */}
+          <div className="flex gap-2 flex-wrap">
+            <Badge 
+              variant="outline" 
+              className={`capitalize text-xs ${
+                workout.fitness_level === 'beginner' ? 'bg-green-100 text-green-700 border-green-300' :
+                workout.fitness_level === 'intermediate' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
+                workout.fitness_level === 'advanced' ? 'bg-red-100 text-red-700 border-red-300' :
+                'bg-muted text-muted-foreground border-muted'
+              }`}
+            >
+              <Target className="h-3 w-3 mr-1" />
+              {workout.fitness_level}
+            </Badge>
+            <Badge variant="outline" className="text-xs text-accent border-accent bg-accent/10">
+              {workout.goal_type.replace('_', ' ')}
+            </Badge>
+          </div>
+          
+          {/* Action Buttons - Mobile Optimized */}
+          {!isCompleted && (
+            <div className="space-y-2">
+              {/* Primary Action */}
+              <Button 
+                onClick={() => onComplete(workout.id, workout.title)}
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                size="sm"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Complete Workout
+              </Button>
+              
+              {/* Secondary Actions */}
+              <div className="grid grid-cols-2 gap-2">
                 <Button 
-                  onClick={() => onComplete(workout.id, workout.title)}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Complete
-                </Button>
-                <Button variant="outline" 
+                  variant="outline" 
+                  size="sm"
                   onClick={() => {
                     const firstVideo = workout.exercises.find(ex => ex.video?.video_url)?.video?.video_url;
                     if (firstVideo) {
                       window.open(firstVideo, '_blank');
                     } else {
-                      // Fallback to search for exercise videos by name
                       const firstExercise = workout.exercises[0];
                       if (firstExercise) {
                         const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(firstExercise.name + ' exercise tutorial')}`;
@@ -133,28 +145,41 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, isToday, isCompleted
                     }
                   }}
                 >
-                  View Workout
+                  View Videos
                 </Button>
-                <Button variant={timerActive ? 'default' : 'outline'} onClick={timerActive ? pauseTimer : startTimer}>
-                  {timerActive ? 'Pause' : 'Start Workout'}
+                <Button 
+                  variant={timerActive ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={timerActive ? pauseTimer : startTimer}
+                >
+                  {timerActive ? 'Pause' : 'Start Timer'}
                 </Button>
               </div>
-            )}
-            {timerActive || seconds > 0 ? (
-              <div className="flex items-center gap-2 mt-2">
-                <span className="font-mono text-lg">{formatTime(seconds)}</span>
-                <Button size="sm" variant="ghost" onClick={resetTimer}>Reset</Button>
-              </div>
-            ) : null}
-            {isCompleted && (
-              <Badge variant="outline" className="text-green-400 border-green-700 bg-accent/10">
-                ✓ Completed
+            </div>
+          )}
+          
+          {/* Timer Display */}
+          {(timerActive || seconds > 0) && (
+            <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
+              <span className="font-mono text-lg font-semibold">{formatTime(seconds)}</span>
+              <Button size="sm" variant="ghost" onClick={resetTimer}>
+                Reset
+              </Button>
+            </div>
+          )}
+          
+          {/* Completed Badge */}
+          {isCompleted && (
+            <div className="text-center">
+              <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
+                ✓ Workout Completed
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </CardHeader>
-      <CardContent>
+      
+      <CardContent className="pt-0">
         <ExerciseList exercises={workout.exercises} />
       </CardContent>
     </Card>
