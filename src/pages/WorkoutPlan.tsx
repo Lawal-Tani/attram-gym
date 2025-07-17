@@ -9,7 +9,7 @@ import WorkoutTips from '@/components/workout/WorkoutTips';
 import LoadingSpinner from '@/components/workout/LoadingSpinner';
 import ErrorDisplay from '@/components/workout/ErrorDisplay';
 import { Badge } from '@/components/ui/badge';
-import { Target, Dumbbell, Flame, Star } from 'lucide-react';
+import { Target, Dumbbell, Flame, Star, Filter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const WorkoutPlan = () => {
@@ -18,6 +18,7 @@ const WorkoutPlan = () => {
   const { workoutPlans, loading, error, refetch } = useWorkoutPlans();
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState(user?.fitness_level || 'beginner');
+  const [equipmentFilter, setEquipmentFilter] = useState<'all' | 'bodyweight' | 'equipment'>('all');
 
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -161,13 +162,21 @@ const WorkoutPlan = () => {
     return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
   });
 
-  // Categorize workouts
-  const bodyweightWorkouts = sortedWorkoutPlans.filter(w =>
-    w.exercises.every((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() === 'bodyweight')
-  );
-  const equipmentWorkouts = sortedWorkoutPlans.filter(w =>
-    w.exercises.some((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() !== 'bodyweight')
-  );
+  // Filter workouts based on equipment selection
+  const getFilteredWorkouts = () => {
+    if (equipmentFilter === 'bodyweight') {
+      return sortedWorkoutPlans.filter(w =>
+        w.exercises.every((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() === 'bodyweight')
+      );
+    } else if (equipmentFilter === 'equipment') {
+      return sortedWorkoutPlans.filter(w =>
+        w.exercises.some((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() !== 'bodyweight')
+      );
+    }
+    return sortedWorkoutPlans; // Show all workouts
+  };
+
+  const filteredWorkouts = getFilteredWorkouts();
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -199,6 +208,26 @@ const WorkoutPlan = () => {
               ))}
             </div>
           </div>
+          
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <span className="font-semibold text-muted-foreground">Equipment:</span>
+            <Select value={equipmentFilter} onValueChange={(value: 'all' | 'bodyweight' | 'equipment') => setEquipmentFilter(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue>
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    {equipmentFilter === 'all' ? 'All Workouts' :
+                     equipmentFilter === 'bodyweight' ? 'No Equipment' : 'Equipment Required'}
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Workouts</SelectItem>
+                <SelectItem value="bodyweight">No Equipment</SelectItem>
+                <SelectItem value="equipment">Equipment Required</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
             <span>Today is {currentDay}</span>
             <div className="flex flex-wrap items-center gap-2">
@@ -217,47 +246,29 @@ const WorkoutPlan = () => {
         </div>
 
         <div className="grid gap-6">
-          {/* Bodyweight Workouts Section */}
-          {bodyweightWorkouts.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-emerald-400">Bodyweight Workouts</h2>
-              <div className="grid gap-6">
-                {bodyweightWorkouts.map((workout) => {
-                  const isToday = workout.day_of_week === currentDay;
-                  const isCompleted = isWorkoutCompleted(workout.id);
-                  return (
-                    <WorkoutCard
-                      key={workout.id}
-                      workout={workout}
-                      isToday={isToday}
-                      isCompleted={isCompleted}
-                      onComplete={markWorkoutComplete}
-                      onView={onViewWorkout}
-                    />
-                  );
-                })}
-              </div>
+          {filteredWorkouts.length > 0 ? (
+            <div className="grid gap-6">
+              {filteredWorkouts.map((workout) => {
+                const isToday = workout.day_of_week === currentDay;
+                const isCompleted = isWorkoutCompleted(workout.id);
+                return (
+                  <WorkoutCard
+                    key={workout.id}
+                    workout={workout}
+                    isToday={isToday}
+                    isCompleted={isCompleted}
+                    onComplete={markWorkoutComplete}
+                    onView={onViewWorkout}
+                  />
+                );
+              })}
             </div>
-          )}
-          {/* Equipment Workouts Section */}
-          {equipmentWorkouts.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-blue-400">Equipment Workouts</h2>
-              <div className="grid gap-6">
-                {equipmentWorkouts.map((workout) => {
-                  const isToday = workout.day_of_week === currentDay;
-                  const isCompleted = isWorkoutCompleted(workout.id);
-                  return (
-                    <WorkoutCard
-                      key={workout.id}
-                      workout={workout}
-                      isToday={isToday}
-                      isCompleted={isCompleted}
-                      onComplete={markWorkoutComplete}
-                      onView={onViewWorkout}
-                    />
-                  );
-                })}
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-muted-foreground">
+                <Filter className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No workouts found</h3>
+                <p>Try adjusting your equipment filter or difficulty level.</p>
               </div>
             </div>
           )}
