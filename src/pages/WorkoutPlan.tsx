@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const WorkoutPlan = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { workoutPlans, loading, error, refetch } = useWorkoutPlans();
+  const { workoutPlans: allWorkoutPlans, loading, error, refetch } = useWorkoutPlans();
   const [completedWorkouts, setCompletedWorkouts] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState(user?.fitness_level || 'beginner');
   const [equipmentFilter, setEquipmentFilter] = useState<'all' | 'bodyweight' | 'equipment'>('all');
@@ -53,7 +53,7 @@ const WorkoutPlan = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       // Find the workout object
-      const workout = workoutPlans.find(w => w.id === workoutPlanId);
+      const workout = filteredWorkouts.find(w => w.id === workoutPlanId);
       // Insert into workout_completions as before
       const { error } = await supabase
         .from('workout_completions')
@@ -127,21 +127,13 @@ const WorkoutPlan = () => {
     }
   };
 
-  const handleLevelChange = async (level: 'beginner' | 'intermediate' | 'advanced') => {
+  const handleLevelChange = (level: 'beginner' | 'intermediate' | 'advanced') => {
     setSelectedLevel(level);
-    if (!user) return;
-    // Update user fitness level in DB
-    await supabase
-      .from('users')
-      .update({ fitness_level: level })
-      .eq('id', user.id);
-    // Optionally update user context if needed
-    // Refetch workout plans
-    if (typeof refetch === 'function') refetch();
+    // No need to update database or refetch - we'll filter locally
   };
 
   const onViewWorkout = (workoutPlanId: string) => {
-    const workout = workoutPlans.find(w => w.id === workoutPlanId);
+    const workout = filteredWorkouts.find(w => w.id === workoutPlanId);
     if (workout) {
       alert(`Viewing workout: ${workout.title}`);
       // You can replace this with a modal or navigation later
@@ -158,22 +150,29 @@ const WorkoutPlan = () => {
 
   const currentDay = getCurrentDay();
 
-  const sortedWorkoutPlans = [...workoutPlans].sort((a, b) => {
-    return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
-  });
-
-  // Filter workouts based on equipment selection
+  // Filter workouts based on both fitness level and equipment
   const getFilteredWorkouts = () => {
+    // First filter by selected fitness level
+    let workoutsByLevel = allWorkoutPlans.filter(w => 
+      w.fitness_level === selectedLevel || w.fitness_level === null
+    );
+    
+    // Sort by day order
+    workoutsByLevel = workoutsByLevel.sort((a, b) => {
+      return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
+    });
+
+    // Then filter by equipment
     if (equipmentFilter === 'bodyweight') {
-      return sortedWorkoutPlans.filter(w =>
+      return workoutsByLevel.filter(w =>
         w.exercises.every((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() === 'bodyweight')
       );
     } else if (equipmentFilter === 'equipment') {
-      return sortedWorkoutPlans.filter(w =>
+      return workoutsByLevel.filter(w =>
         w.exercises.some((ex: any) => (ex.equipment || 'bodyweight').toLowerCase() !== 'bodyweight')
       );
     }
-    return sortedWorkoutPlans; // Show all workouts
+    return workoutsByLevel; // Show all workouts for the selected level
   };
 
   const filteredWorkouts = getFilteredWorkouts();
