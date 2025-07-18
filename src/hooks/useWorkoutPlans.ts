@@ -43,7 +43,7 @@ export const useWorkoutPlans = () => {
       setLoading(true);
       setError(null);
 
-      // First check if user has custom workout plans for their fitness level
+      // Fetch all workout plans (not filtered by fitness level)
       const { data: customPlans, error: customError } = await supabase
         .from('workout_plans')
         .select(`
@@ -58,11 +58,11 @@ export const useWorkoutPlans = () => {
             sets,
             reps,
             rest_time,
-            order_index
+            order_index,
+            equipment
           )
         `)
-        .eq('user_id', user.id)
-        .eq('fitness_level', user.fitness_level)
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('day_of_week');
 
       if (customError) throw customError;
